@@ -130,7 +130,7 @@ cd ..
 
 disp(['SARS-CoV-2 na Slovensku'])
 disp(['----------------------------'])
-disp(['Výhlad na ',datestr(dt),' (do konca dna):'])
+disp(['* Výhlad poctu prípadov k ',datestr(dt),' * (aktualne do konca dna):'])
 disp(' ')
 disp(['Overené prípady: ',num2str(NdPredicted(max(Day)+1)),' (',num2str(NdPredLow(max(Day)+1)),'-',num2str(NdPredHigh(max(Day)+1)),')']) %,'(',num2str(NdPredLow(max(Day)+1)),'-',NdPredHigh(max(Day)+1),')'])
 disp(['Nové overené prípady: ',num2str(NdPredicted(max(Day)+1)-Nd(end)),' (',num2str(NdPredLow(max(Day)+1)-Nd(end)),'-',num2str(NdPredHigh(max(Day)+1)-Nd(end)),')']) %,'(',num2str(NdPredLow(max(Day)+1)),'-',NdPredHigh(max(Day)+1),')'])
@@ -138,7 +138,11 @@ disp(['Celkový predpokladaný pocet nakazených: ',num2str(NdSymptoms(max(Day)+1))
 disp(['Predpokladaný dátum 100+ overených prípadov: ',datestr(d1+min(find(NdPredicted>100)))])
 disp(['Faktor nárastu: ',num2str(round((gF-1)*100*10)/10),'%, R^2=',num2str(R2)])
 disp(['Zdvojenie prípadov za: ',num2str( round((70/((gF-1)*100))*10)/10),' dní'])
-disp(['Testy na mil. obyvatelov: ',num2str(round(popTest(end)))])
+disp(' ')
+disp(['* Testovanie k ',datestr(dt),' *'])
+disp(' ')
+disp(['Celkove testy na mil. obyvatelov: ',num2str(round(popTest(end)))])
+disp(['Nove testy za den na mil. obyvatelov: ',num2str( round(newTest(end)/popSize))])
 disp(['Nárast intenzity testovania: ',num2str(round(changeTest)),'%'])
 
 
