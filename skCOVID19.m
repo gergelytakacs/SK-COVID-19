@@ -1,5 +1,6 @@
 % Gergely Takács, www.gergelytakacs.com
 % No guarantees given, whatsoever.
+% Ideas: Residuals plot, Weighted forgetting, ,
 
 clc; clear; close all;
 importData;
@@ -56,9 +57,8 @@ NdSymptoms=round(gF.^(DayPred+symptoms));
 NdSymptomsHigh=round(ci(2).^(DayPred+symptoms));
 NdSymptomsLow=round(ci(1).^(DayPred+symptoms));
 
-%% Plotting
+%% Cases
 
-% Cases ---------------------------------------
 figure(1)
 
 patch([DayPred, DayPred(end:-1:1), DayPred(1)],[NdPredLow, NdPredHigh(end:-1:1),NdPredLow(1)],'r','EdgeAlpha',0,'FaceAlpha',0.2) % Confidence intervals
@@ -93,14 +93,17 @@ fig.PaperPosition = [0 0 20 10];
 cd out
 print(['skCOVID19_Cases_',datestr(dt)],'-dpng','-r0')
 print(['skCOVID19_Cases_',datestr(dt)],'-dpdf','-r0')
+
+axis([0,length(Day)+1,0,dataSKpred(end,4)])
+
+print(['skCOVID19_Cases_Detail',datestr(dt)],'-dpng','-r0')
+print(['skCOVID19_Cases_Detail',datestr(dt)],'-dpdf','-r0')
 cd ..
+
 
 %% Growth factor
 
 figure(2)
-
-
-
 
 % Previous predictions
 plot(dataSKpred(:,1)-1,(dataSKpred(:,5)-1)*100,'k.')
@@ -108,7 +111,7 @@ errorbar(dataSKpred(:,1)-1,(dataSKpred(:,5)-1)*100,(dataSKpred(:,6)-1)*100-(data
 hold on
 grid on
 
-plot(Day(2:end),growthFactor) % Predicted Shifted Cases
+plot(Day(2:end),growthFactor,'.-','LineWidth',2) % Predicted Shifted Cases
 
 xticks(DayPred)
 xticklabels(DatePred)
@@ -126,11 +129,36 @@ print(['skCOVID19_GrowthFactor_',datestr(dt)],'-dpng','-r0')
 print(['skCOVID19_GrowthFactor_',datestr(dt)],'-dpdf','-r0')
 cd ..
 
+%% Testing
+
+figure(3)
+
+hold on
+plot(Day,totTest,'.-','LineWidth',2) % Predicted Shifted Cases
+bar(Day(2:end),newTest) % Confirmed new cases
+grid on
+
+xticks(DayPred)
+xticklabels(DatePred)
+xtickangle(90)
+xlabel('Date')
+ylabel('Tests')
+legend('Total tests','New Tests','Location','northwest')
+title(['SARS-CoV-2 Tests in Slovakia, ',datestr(dt)])
+axis([1,max(Day)+1,0,max(totTest)])
+text(1.2,2.9,'github.com/gergelytakacs/SK-COVID-19','FontSize',7,'rotation',90,'Color',[0.7 0.7 0.7])
+text(1.6,2.9,'gergelytakacs.com','FontSize',7,'rotation',90,'Color',[0.7 0.7 0.7])
+
+cd out
+print(['skCOVID19_Tests_',datestr(dt)],'-dpng','-r0')
+print(['skCOVID19_Tests_',datestr(dt)],'-dpdf','-r0')
+cd ..
+
 %% Print
 
 disp(['SARS-CoV-2 na Slovensku'])
 disp(['----------------------------'])
-disp(['* Výhlad poctu prípadov k ',datestr(dt),' * (aktualne do konca dna):'])
+disp(['* Výhlad zmeny poctu prípadov k ',datestr(dt),' * (aktualne do konca dna):'])
 disp(' ')
 disp(['Overené prípady: ',num2str(NdPredicted(max(Day)+1)),' (',num2str(NdPredLow(max(Day)+1)),'-',num2str(NdPredHigh(max(Day)+1)),')']) %,'(',num2str(NdPredLow(max(Day)+1)),'-',NdPredHigh(max(Day)+1),')'])
 disp(['Nové overené prípady: ',num2str(NdPredicted(max(Day)+1)-Nd(end)),' (',num2str(NdPredLow(max(Day)+1)-Nd(end)),'-',num2str(NdPredHigh(max(Day)+1)-Nd(end)),')']) %,'(',num2str(NdPredLow(max(Day)+1)),'-',NdPredHigh(max(Day)+1),')'])
@@ -139,11 +167,11 @@ disp(['Predpokladaný dátum 100+ overených prípadov: ',datestr(d1+min(find(NdPred
 disp(['Faktor nárastu: ',num2str(round((gF-1)*100*10)/10),'%, R^2=',num2str(R2)])
 disp(['Zdvojenie prípadov za: ',num2str( round((70/((gF-1)*100))*10)/10),' dní'])
 disp(' ')
-disp(['* Testovanie k ',datestr(dt),' *'])
+disp(['* Stav testovania k ',datestr(dt-1),' (vratane) *'])
 disp(' ')
 disp(['Celkove testy na mil. obyvatelov: ',num2str(round(popTest(end)))])
 disp(['Nove testy za den na mil. obyvatelov: ',num2str( round(newTest(end)/popSize))])
-disp(['Nárast intenzity testovania: ',num2str(round(changeTest)),'%'])
+disp(['Denná zmena intenzity testovania: ',num2str(round(changeTest)),'%'])
 
 
 disp(['----------------------------'])
