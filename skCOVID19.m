@@ -47,7 +47,7 @@ NdPredHigh=round(ci(2).^DayPred);
 NdPredLow=round(ci(1).^DayPred);
 
 
-% dataSKpred(2,:)=[(max(Day)+1),NdPredicted(max(Day)+1), NdPredLow(max(Day)+1), NdPredHigh(max(Day)+1), gF, ci(1), ci(2)]; save dataSKpred dataSKpred
+% dataSKpred(4,:)=[(max(Day)+1),NdPredicted(max(Day)+1), NdPredLow(max(Day)+1), NdPredHigh(max(Day)+1), gF, ci(1), ci(2)]; save dataSKpred dataSKpred
 %% Shift data
 
 
