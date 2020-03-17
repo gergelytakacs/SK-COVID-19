@@ -3,14 +3,19 @@
 % Ideas: Residuals plot, Weighted forgetting, ,
 
 clc; clear; close all;
+
 importData;
+
+
 load dataSKpred;
+
+
 
 d1=datetime(2020,3,6,'Format','d.M'); % First confirmed case
 pDay=5;                  % Days to predict  
 symptoms=5;              % Mean days before symptoms show
 popSize=5.45;            % Population size in millions
-
+nPop=popSize*1E6;        % Population size
 
 dt = d1+length(Day);       % Length of last data
 Date = datestr(d1:dt);     % Date array with data

@@ -1,0 +1,3 @@
+[submodule "SEIR"]
+	path = SEIR
+	url = https://github.com/ECheynet/SEIR
