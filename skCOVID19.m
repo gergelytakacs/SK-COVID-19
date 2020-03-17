@@ -36,7 +36,7 @@ growthFactor= (growthFactor(2:end-1)-1)*100;
 
 %% Finding exponential fit to data
 
-[fitresult,gof]=expFit(Day, Nd);
+[fitresult,gof]=expFit(Day(6:end), Nd(6:end));
 gF=fitresult.a; % Growth factor 
 ci=confint(fitresult); % Confidence intervals at 95% confidentce
 R2=gof.rsquare;
@@ -47,8 +47,7 @@ NdPredHigh=round(ci(2).^DayPred);
 NdPredLow=round(ci(1).^DayPred);
 
 
-% dataSKpred(2,:)=[(max(Day)+1),NdPredicted(max(Day)+1), NdPredLow(max(Day)+1), NdPredHigh(max(Day)+1), gF, ci(1), ci(2)]
-% save dataSKpred dataSKpred
+% dataSKpred(2,:)=[(max(Day)+1),NdPredicted(max(Day)+1), NdPredLow(max(Day)+1), NdPredHigh(max(Day)+1), gF, ci(1), ci(2)]; save dataSKpred dataSKpred
 %% Shift data
 
 
