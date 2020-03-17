@@ -1,6 +1,6 @@
 % Gergely Takács, www.gergelytakacs.com
 % No guarantees given, whatsoever.
-% Ideas: Residuals plot, Weighted forgetting, ,
+% Ideas: Residuals plot, Weighted forgetting, Poisson ratio, SEIR model
 
 clc; clear; close all;
 
