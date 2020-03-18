@@ -12,7 +12,7 @@ load dataSKpred;
 
 
 d1=datetime(2020,3,6,'Format','d.M'); % First confirmed case
-pDay=5;                  % Days to predict  
+pDay=7;                  % Days to predict  
 symptoms=5;              % Mean days before symptoms show
 popSize=5.45;            % Population size in millions
 nPop=popSize*1E6;        % Population size
@@ -41,7 +41,7 @@ growthFactor= (growthFactor(2:end-1)-1)*100;
 
 %% Finding exponential fit to data
 
-[fitresult,gof]=expFit(Day(6:end), Nd(6:end));
+[fitresult,gof]=expFit(Day(1:end), Nd(1:end));
 gF=fitresult.a; % Growth factor 
 ci=confint(fitresult); % Confidence intervals at 95% confidentce
 R2=gof.rsquare;
@@ -168,6 +168,7 @@ disp(['Overené prípady: ',num2str(NdPredicted(max(Day)+1)),' (',num2str(NdPredLo
 disp(['Nové overené prípady: ',num2str(NdPredicted(max(Day)+1)-Nd(end)),' (',num2str(NdPredLow(max(Day)+1)-Nd(end)),'-',num2str(NdPredHigh(max(Day)+1)-Nd(end)),')']) %,'(',num2str(NdPredLow(max(Day)+1)),'-',NdPredHigh(max(Day)+1),')'])
 disp(['Celkový predpokladaný pocet nakazených: ',num2str(NdSymptoms(max(Day)+1)),' (',num2str(NdSymptomsLow(max(Day)+1)),'-',num2str(NdSymptomsHigh(max(Day)+1)),')'])
 disp(['Predpokladaný dátum 100+ overených prípadov: ',datestr(d1+min(find(NdPredicted>100)))])
+disp(['Predpokladaný dátum 1000+ overených prípadov: ',datestr(d1+min(find(NdPredicted>1000)))])
 disp(['Faktor nárastu: ',num2str(round((gF-1)*100*10)/10),'%, R^2=',num2str(R2)])
 disp(['Zdvojenie prípadov za: ',num2str( round((70/((gF-1)*100))*10)/10),' dní'])
 disp(' ')
