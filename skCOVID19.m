@@ -40,8 +40,8 @@ growthFactor= ([Nd; 0]./[0; Nd]);
 growthFactor= (growthFactor(2:end-1)-1)*100;
 
 %% Finding exponential fit to data
-
-[fitresult,gof]=expFit(Day(1:end), Nd(1:end));
+fitbegin=1;
+[fitresult,gof]=expFit(Day(fitbegin:end), Nd(fitbegin:end));
 gF=fitresult.a; % Growth factor 
 ci=confint(fitresult); % Confidence intervals at 95% confidentce
 R2=gof.rsquare;
@@ -167,7 +167,7 @@ disp(' ')
 disp(['Overené prípady: ',num2str(NdPredicted(max(Day)+1)),' (',num2str(NdPredLow(max(Day)+1)),'-',num2str(NdPredHigh(max(Day)+1)),')']) %,'(',num2str(NdPredLow(max(Day)+1)),'-',NdPredHigh(max(Day)+1),')'])
 disp(['Nové overené prípady: ',num2str(NdPredicted(max(Day)+1)-Nd(end)),' (',num2str(NdPredLow(max(Day)+1)-Nd(end)),'-',num2str(NdPredHigh(max(Day)+1)-Nd(end)),')']) %,'(',num2str(NdPredLow(max(Day)+1)),'-',NdPredHigh(max(Day)+1),')'])
 disp(['Celkový predpokladaný pocet nakazených: ',num2str(NdSymptoms(max(Day)+1)),' (',num2str(NdSymptomsLow(max(Day)+1)),'-',num2str(NdSymptomsHigh(max(Day)+1)),')'])
-disp(['Predpokladaný dátum 100+ overených prípadov: ',datestr(d1+min(find(NdPredicted>100)))])
+%disp(['Predpokladaný dátum 100+ overených prípadov: ',datestr(d1+min(find(NdPredicted>100)))])
 disp(['Predpokladaný dátum 1000+ overených prípadov: ',datestr(d1+min(find(NdPredicted>1000)))])
 disp(['Faktor nárastu: ',num2str(round((gF-1)*100*10)/10),'%, R^2=',num2str(R2)])
 disp(['Zdvojenie prípadov za: ',num2str( round((70/((gF-1)*100))*10)/10),' dní'])
