@@ -12,7 +12,7 @@ load dataSKpred;
 fitbegin=1;
 
 d1=datetime(2020,3,6,'Format','d.M'); % First confirmed case
-pDay=7;                  % Days to predict  
+pDay=14;                  % Days to predict  
 symptoms=5.1;              % Mean days before symptoms show
 popSize=5.45;            % Population size in millions
 nPop=popSize*1E6;        % Population size
@@ -41,15 +41,16 @@ growthFactor= (growthFactor(2:end-1)-1)*100;
 
 %% Finding exponential fit to data
 
-[fitresult,gof]=expFit(Day(fitbegin:end), Nd(fitbegin:end));
+[fitresult,gof]=expFitStart(Day(fitbegin:end), Nd(fitbegin:end));
 gF=fitresult.a; % Growth factor 
+N0=fitresult.b; % Correction for zero day cases
 ci=confint(fitresult); % Confidence intervals at 95% confidentce
 R2=gof.rsquare;
 DayPred=1:1:length(Day)+pDay;
 
-NdPredicted=round(gF.^DayPred);
-NdPredHigh=round(ci(2).^DayPred);
-NdPredLow=round(ci(1).^DayPred);
+NdPredicted=round((gF.^DayPred)*N0);
+NdPredHigh=round((ci(2,1).^DayPred)*N0);
+NdPredLow=round((ci(1,1).^DayPred)*N0);
 
 
 % dataSKpred(4,:)=[(max(Day)+1),NdPredicted(max(Day)+1), NdPredLow(max(Day)+1), NdPredHigh(max(Day)+1), gF, ci(1), ci(2)]; save dataSKpred dataSKpred
@@ -57,9 +58,9 @@ NdPredLow=round(ci(1).^DayPred);
 
 
 
-NdSymptoms=round(gF.^(DayPred+symptoms));
-NdSymptomsHigh=round(ci(2).^(DayPred+symptoms));
-NdSymptomsLow=round(ci(1).^(DayPred+symptoms));
+NdSymptoms=round(gF.^(DayPred+symptoms)*N0);
+NdSymptomsHigh=round(ci(2,1).^(DayPred+symptoms)*N0);
+NdSymptomsLow=round(ci(1,1).^(DayPred+symptoms)*N0);
 
 %% Cases
 
@@ -160,13 +161,36 @@ cd ..
 
 %% Print
 
+% Too early for such intervals, there are negative numbers
+% disp(['SARS-CoV-2 na Slovensku'])
+% disp(['----------------------------'])
+% disp(['* Výhlad zmeny poctu prípadov k ',datestr(dt),' * (aktualne do konca dna):'])
+% disp(' ')
+% disp(['Overené prípady: ',num2str(NdPredicted(max(Day)+1)),' (',num2str(NdPredLow(max(Day)+1)),'-',num2str(NdPredHigh(max(Day)+1)),')']) %,'(',num2str(NdPredLow(max(Day)+1)),'-',NdPredHigh(max(Day)+1),')'])
+% disp(['Nové overené prípady: ',num2str(NdPredicted(max(Day)+1)-Nd(end)),' (',num2str(NdPredLow(max(Day)+1)-Nd(end)),'-',num2str(NdPredHigh(max(Day)+1)-Nd(end)),')']) %,'(',num2str(NdPredLow(max(Day)+1)),'-',NdPredHigh(max(Day)+1),')'])
+% disp(['Celkový predpokladaný pocet nakazených: ',num2str(NdSymptoms(max(Day)+1)),' (',num2str(NdSymptomsLow(max(Day)+1)),'-',num2str(NdSymptomsHigh(max(Day)+1)),')'])
+% %disp(['Predpokladaný dátum 100+ overených prípadov: ',datestr(d1+min(find(NdPredicted>100)))])
+% disp(['Predpokladaný dátum 1000+ overených prípadov: ',datestr(d1+min(find(NdPredicted>1000)))])
+% disp(['Faktor nárastu: ',num2str(round((gF-1)*100*10)/10),'%, R^2=',num2str(R2)])
+% disp(['Zdvojenie prípadov za: ',num2str( round((70/((gF-1)*100))*10)/10),' dní'])
+% disp(' ')
+% disp(['* Stav testovania k ',datestr(dt-1),' (vratane) *'])
+% disp(' ')
+% disp(['Celkove testy na mil. obyvatelov: ',num2str(round(popTest(end)))])
+% disp(['Nove testy za den na mil. obyvatelov: ',num2str( round(newTest(end)/popSize))])
+% disp(['Denná zmena intenzity testovania: ',num2str(round(changeTest)),'%'])
+% 
+% 
+% disp(['----------------------------'])
+% disp(['Viac na: https://github.com/gergelytakacs/SK-COVID-19'])
+
 disp(['SARS-CoV-2 na Slovensku'])
 disp(['----------------------------'])
 disp(['* Výhlad zmeny poctu prípadov k ',datestr(dt),' * (aktualne do konca dna):'])
 disp(' ')
-disp(['Overené prípady: ',num2str(NdPredicted(max(Day)+1)),' (',num2str(NdPredLow(max(Day)+1)),'-',num2str(NdPredHigh(max(Day)+1)),')']) %,'(',num2str(NdPredLow(max(Day)+1)),'-',NdPredHigh(max(Day)+1),')'])
-disp(['Nové overené prípady: ',num2str(NdPredicted(max(Day)+1)-Nd(end)),' (',num2str(NdPredLow(max(Day)+1)-Nd(end)),'-',num2str(NdPredHigh(max(Day)+1)-Nd(end)),')']) %,'(',num2str(NdPredLow(max(Day)+1)),'-',NdPredHigh(max(Day)+1),')'])
-disp(['Celkový predpokladaný pocet nakazených: ',num2str(NdSymptoms(max(Day)+1)),' (',num2str(NdSymptomsLow(max(Day)+1)),'-',num2str(NdSymptomsHigh(max(Day)+1)),')'])
+disp(['Overené prípady: ',num2str(NdPredicted(max(Day)+1))]) %,'(',num2str(NdPredLow(max(Day)+1)),'-',NdPredHigh(max(Day)+1),')'])
+disp(['Nové overené prípady: ',num2str(NdPredicted(max(Day)+1)-Nd(end))]) %,'(',num2str(NdPredLow(max(Day)+1)),'-',NdPredHigh(max(Day)+1),')'])
+disp(['Celkový predpokladaný pocet nakazených: ',num2str(NdSymptoms(max(Day)+1))])
 %disp(['Predpokladaný dátum 100+ overených prípadov: ',datestr(d1+min(find(NdPredicted>100)))])
 disp(['Predpokladaný dátum 1000+ overených prípadov: ',datestr(d1+min(find(NdPredicted>1000)))])
 disp(['Faktor nárastu: ',num2str(round((gF-1)*100*10)/10),'%, R^2=',num2str(R2)])
@@ -181,4 +205,5 @@ disp(['Denná zmena intenzity testovania: ',num2str(round(changeTest)),'%'])
 
 disp(['----------------------------'])
 disp(['Viac na: https://github.com/gergelytakacs/SK-COVID-19'])
+
 
