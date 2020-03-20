@@ -9,11 +9,11 @@ importData;
 
 load dataSKpred;
 
-
+fitbegin=1;
 
 d1=datetime(2020,3,6,'Format','d.M'); % First confirmed case
 pDay=7;                  % Days to predict  
-symptoms=5;              % Mean days before symptoms show
+symptoms=5.1;              % Mean days before symptoms show
 popSize=5.45;            % Population size in millions
 nPop=popSize*1E6;        % Population size
 
@@ -40,7 +40,7 @@ growthFactor= ([Nd; 0]./[0; Nd]);
 growthFactor= (growthFactor(2:end-1)-1)*100;
 
 %% Finding exponential fit to data
-fitbegin=1;
+
 [fitresult,gof]=expFit(Day(fitbegin:end), Nd(fitbegin:end));
 gF=fitresult.a; % Growth factor 
 ci=confint(fitresult); % Confidence intervals at 95% confidentce
