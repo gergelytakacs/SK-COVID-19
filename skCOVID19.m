@@ -58,17 +58,24 @@ if (max(dataSKpred(:,1))<=max(Day))
 dataSKpred(end+1,:)=[(max(Day)+1),NdPredicted(max(Day)+1), NdPredLow(2), NdPredHigh(2), gF, ci(1,1), ci(2,1)];
 save dataSKpred dataSKpred
 end
-%% Shift data
-
-
+%% Shift data to account for onset of symptoms
 
 NdSymptoms=round(gF.^(DayPred+symptoms)*N0);
 NdSymptomsHigh=round(ci(2,1).^(DayPred+symptoms)*ci(2,2));
 NdSymptomsLow=round(ci(1,1).^(DayPred+symptoms)*N0);
 
+%% Residuals
+NdResiduals=NdPredicted(1:max(Day))'-Nd;
+
 %% First case
 expFun = @(x)ceil(gF^(x)*N0);
 firstCase = floor(fminbnd(expFun, -100, 0));
+
+%% Testing changes
+
+[fitresult,gof]=linFit(Day(2:end), newTest);
+testA=fitresult.p1;
+testB=fitresult.p2;
 
 %% Cases
 % Colors
@@ -152,6 +159,7 @@ figure(3)
 hold on
 plot(Day,totTest,'.-','LineWidth',2) % Predicted Shifted Cases
 bar(Day(2:end),newTest) % Confirmed new cases
+plot(Day(2:end),testA.*Day(2:end)+testB,'k--')
 grid on
 
 xticks(DayPred)
@@ -159,7 +167,7 @@ xticklabels(DatePred)
 xtickangle(90)
 xlabel('Date')
 ylabel('Tests')
-legend('Total tests','New Tests','Location','northwest')
+legend('Total tests','New Tests','Trend','Location','northwest')
 title(['SARS-CoV-2 Tests in Slovakia, ',datestr(dt)])
 axis([1,max(Day)+1,0,max(totTest)])
 text(1.2,2.9,'github.com/gergelytakacs/SK-COVID-19','FontSize',7,'rotation',90,'Color',[0.7 0.7 0.7])
@@ -168,6 +176,33 @@ text(1.6,2.9,'gergelytakacs.com','FontSize',7,'rotation',90,'Color',[0.7 0.7 0.7
 cd out
 print(['skCOVID19_Tests_',datestr(dt)],'-dpng','-r0')
 print(['skCOVID19_Tests_',datestr(dt)],'-dpdf','-r0')
+cd ..
+
+%% Testing
+
+figure(4)
+
+patch([0 max(Day), max(Day) 0 ],[mean(NdResiduals)+std(NdResiduals) mean(NdResiduals)+std(NdResiduals),mean(NdResiduals)-std(NdResiduals) mean(NdResiduals)-std(NdResiduals)],'b','EdgeAlpha',0,'FaceAlpha',0.2) % Confidence intervals
+patch([0 max(Day), max(Day) 0 ],[mean(NdResiduals)+2*std(NdResiduals) mean(NdResiduals)+2*std(NdResiduals),mean(NdResiduals)-2*std(NdResiduals) mean(NdResiduals)-2*std(NdResiduals)],'b','EdgeAlpha',0,'FaceAlpha',0.1) % Confidence intervals
+
+hold on
+plot(Day,NdResiduals,'.-','LineWidth',2) % Predicted Shifted Cases
+grid on
+
+xticks(DayPred)
+xticklabels(DatePred)
+xtickangle(90)
+xlabel('Date')
+ylabel('Cases (difference)')
+legend('1 sigma','2 sigma','Case residuals','Location','northwest')
+title(['SARS-CoV-2 Case prediction residuals for Slovakia, ',datestr(dt)])
+%axis([1,max(Day)+1,0,max(totTest)])
+text(1.2,2.9,'github.com/gergelytakacs/SK-COVID-19','FontSize',7,'rotation',90,'Color',[0.7 0.7 0.7])
+text(1.6,2.9,'gergelytakacs.com','FontSize',7,'rotation',90,'Color',[0.7 0.7 0.7])
+
+cd out
+print(['skCOVID19_Residuals_',datestr(dt)],'-dpng','-r0')
+print(['skCOVID19_Residuals_',datestr(dt)],'-dpdf','-r0')
 cd ..
 
 %% Print
@@ -191,6 +226,7 @@ disp(' ')
 disp(['Celkove testy na mil. obyvatelov: ',num2str(round(popTest(end)))])
 disp(['Nove testy za den na mil. obyvatelov: ',num2str( round(newTest(end)/popSize))])
 disp(['Denná zmena intenzity testovania: ',num2str(round(changeTest)),'%'])
+disp(['Trend zmeny intenzity testovania: ',num2str(round((testA))),'% (lineárny fit)'])
 
 
 disp(['----------------------------'])
