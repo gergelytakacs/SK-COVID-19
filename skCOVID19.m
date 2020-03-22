@@ -1,6 +1,6 @@
 % Gergely Takács, www.gergelytakacs.com
 % No guarantees given, whatsoever.
-% Ideas: Residuals plot, Weighted forgetting, Poisson ratio, SEIR model
+% Ideas: Weighted forgetting, SIR Model fi, SEIR model
 
 clc; clear; close all;
 
@@ -12,7 +12,7 @@ load dataSKpred;
 fitbegin=1;
 
 d1=datetime(2020,3,6,'Format','d.M'); % First confirmed case
-pDay=14;                  % Days to predict  
+pDay=10;                  % Days to predict  
 symptoms=5.1;              % Mean days before symptoms show
 popSize=5.45;            % Population size in millions
 nPop=popSize*1E6;        % Population size
@@ -205,30 +205,38 @@ print(['skCOVID19_Residuals_',datestr(dt)],'-dpng','-r0')
 print(['skCOVID19_Residuals_',datestr(dt)],'-dpdf','-r0')
 cd ..
 
+%% Tests per positive
+
+%plot(Day(2:end),newTest/Confirmed(2:end))
+
+
+%% SIR estimation procedure
+
+SIR_ID
+
 %% Print
 
 
 disp(['SARS-CoV-2 na Slovensku'])
-disp(['----------------------------'])
-disp(['* Výhlad zmeny poctu prípadov k ',datestr(dt),' * (aktualne do konca dna):'])
+disp(['============================'])
+disp(['* Analýza ',datestr(now),''])
 disp(' ')
+disp('Exponenciálny model: (aktualny do konca dna)')
+disp(['----------------------------'])
 disp(['Overené prípady: ',num2str(NdPredicted(max(Day)+1)),' (',num2str(NdPredLow(2)),'-',num2str(NdPredHigh(2)),')']) %,'(',num2str(NdPredLow(max(Day)+1)),'-',NdPredHigh(max(Day)+1),')'])
 disp(['Nové overené prípady: ',num2str(NdPredicted(max(Day)+1)-Nd(end)),' (',num2str(NdPredLow(2)-Nd(end)),'-',num2str(NdPredHigh(2)-Nd(end)),')']) %,'(',num2str(NdPredLow(max(Day)+1)),'-',NdPredHigh(max(Day)+1),')'])
 disp(['Celkový predpokladaný pocet nakazených: ',num2str(NdSymptoms(max(Day)+1)),' (',num2str(NdSymptomsLow(max(Day)+1)),'-',num2str(NdSymptomsHigh(max(Day)+1)),')'])
 %disp(['Predpokladaný dátum 100+ overených prípadov: ',datestr(d1+min(find(NdPredicted>100)))])
 disp(['Predpokladaný dátum 1000+ overených prípadov: ',datestr(d1+min(find(NdPredicted>1000)))])
 disp(['Predpokladaný dátum prvého nakazenia: ',datestr(d1+firstCase)])
-disp(['Faktor nárastu: ',num2str(round((gF-1)*100*10)/10),'%, R^2=',num2str(R2)])
-disp(['Zdvojenie prípadov za: ',num2str( round((70/((gF-1)*100))*10)/10),' dní'])
+disp(['Faktor nárastu: ',num2str(round((gF-1)*100*10)/10),'% (',num2str(round((ci(1,1)-1)*100*10)/10),'%-',num2str(round((ci(2,1)-1)*100*10)/10),'%), R^2=',num2str(R2)])
+disp(['Zdvojenie poctu prípadov za: ',num2str( round((70/((gF-1)*100))*10)/10),' dní'])
 disp(' ')
-disp(['* Stav testovania k ',datestr(dt-1),' (vratane) *'])
-disp(' ')
-disp(['Celkove testy na mil. obyvatelov: ',num2str(round(popTest(end)))])
-disp(['Nove testy za den na mil. obyvatelov: ',num2str( round(newTest(end)/popSize))])
-disp(['Denná zmena intenzity testovania: ',num2str(round(changeTest)),'%'])
-disp(['Trend zmeny intenzity testovania: ',num2str(round((testA))),'% (lineárny fit)'])
-
-
+disp(['SIR model podla data:'])
 disp(['----------------------------'])
+disp(['Odhad základného reprodukcného císla R0: ',num2str(round(R0est*10)/10),', (MSE: ',num2str(MSE),')'])
+
+
+disp(['============================='])
 disp(['Viac na: https://github.com/gergelytakacs/SK-COVID-19'])
 
