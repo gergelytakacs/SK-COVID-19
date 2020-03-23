@@ -37,10 +37,17 @@ SIRinit.Parameters(2).Minimum = 0.0;
 SIRinit.Parameters(2).Maximum = 14.0; % Mean deaths 17 days, mean recoveries
 SIRinit.Parameters(2).Fixed = false; 
 
-SIRinit.InitialStates(1).Fixed = false;
-SIRinit.InitialStates(2).Fixed = false;
-SIRinit.InitialStates(3).Fixed = false;
+% Susceptibles
+SIRinit.InitialStates(1).Fixed = true;
 
+
+SIRinit.InitialStates(2).Fixed = false;   % Let this parameter free, overall results will be better. True number unknown anyways
+SIRinit.InitialStates(2).Minimum = 0;     % Cannot be negative
+SIRinit.InitialStates(2).Maximum = 100;   % Unlikely to be more
+
+SIRinit.InitialStates(3).Fixed = false;   % Yet again, we can let this parameter free.
+SIRinit.InitialStates(2).Minimum = 0;
+SIRinit.InitialStates(2).Maximum = 10;
 
 % Identify model
 opt = nlgreyestOptions('Display','on','EstCovar',true,'SearchMethod','Auto'); %gna
@@ -52,11 +59,17 @@ SIR = nlgreyest(data,SIRinit,opt);              % Run identification procedure
 SIR                                          % List model parameters
 grid on                                        % Turn on grid
 
-%% Simulate
+%% Simulate for generic data
 udata = iddata([],zeros(length(DayPred),0),1);
-opt2 = simOptions('InitialCondition',[]);
-SIRsim = sim(SIR,udata,opt2);
+opt = simOptions('InitialCondition',[]);
+SIRsim = sim(SIR,udata,opt);
 Isim=round(SIRsim.OutputData(:,2));
+
+%% simulate to find zero day data
+opt2 = simOptions('InitialCondition',[nPop-1; 1; 0]);
+SIRsim2 = sim(SIR,udata,opt2);
+Isim2=round(SIRsim2.OutputData(:,2));
+d0est= max(find(Isim2<N0est));
 
 %% Growth factor
 growthFactorSIR= ([Isim; 0]./[0; Isim]);
@@ -65,10 +78,9 @@ gFSIR=mean(growthFactorSIR);
 
 
 
-
-
 %% Report
 R0est=SIR.Parameters(1).Value;
 dRest=SIR.Parameters(2).Value;
+N0est=SIR.InitialStates(2).Value;
 %model.Report.Fit
 MSE=SIR.Report.Fit.MSE;
