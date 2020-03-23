@@ -23,41 +23,52 @@ InitialStates = [nPop-I(1);I(1);R(1)];           % Initial values of  [S I R] st
 Ts            = 0;                      % Time-continuous system
 
 % Set identification options
-sir = idnlgrey(FileName,Order,Parameters,InitialStates,Ts,'TimeUnit','days','Name','SIR Model');
-%sir = setpar(nlgr,'Name',{'R0','dR (Removal rate)'});
-%sir = setinit(nlgr,'Name',{'Susceptible' 'Infected' 'Removed'});
+SIRinit = idnlgrey(FileName,Order,Parameters,InitialStates,Ts,'TimeUnit','days','Name','SIR Model');
+SIRinit = setpar(SIRinit,'Name',{'R0','dR (Removal rate)'});
+SIRinit = setinit(SIRinit,'Name',{'Susceptible' 'Infected' 'Removed'});
 
 % Base reproduction number R0
-sir.Parameters(1).Minimum = 1.0;
-sir.Parameters(1).Maximum = 15;
-sir.Parameters(1).Fixed = false;
+SIRinit.Parameters(1).Minimum = 1.0;
+SIRinit.Parameters(1).Maximum = 15;
+SIRinit.Parameters(1).Fixed = false;
     
 % Removal rate dR (1/gamma)
-sir.Parameters(2).Minimum = 0.0;
-sir.Parameters(2).Maximum = 14.0; % Mean deaths 17 days, mean recoveries
-sir.Parameters(2).Fixed = false; 
+SIRinit.Parameters(2).Minimum = 0.0;
+SIRinit.Parameters(2).Maximum = 14.0; % Mean deaths 17 days, mean recoveries
+SIRinit.Parameters(2).Fixed = false; 
 
-sir.InitialStates(1).Fixed = false;
-sir.InitialStates(2).Fixed = false;
-sir.InitialStates(3).Fixed = false;
+SIRinit.InitialStates(1).Fixed = false;
+SIRinit.InitialStates(2).Fixed = false;
+SIRinit.InitialStates(3).Fixed = false;
 
 
 % Identify model
 opt = nlgreyestOptions('Display','on','EstCovar',true,'SearchMethod','Auto'); %gna
 opt.SearchOption.MaxIter = 50;                % Maximal number of iterations
-model = nlgreyest(data,sir,opt);              % Run identification procedure
+SIR = nlgreyest(data,SIRinit,opt);              % Run identification procedure
     
-
-compare(data,model);                           % Compare data to model
-model                                          % List model parameters
+%% Just internal comparison, not to output
+%compare(data,SIR);                           % Compare data to model
+SIR                                          % List model parameters
 grid on                                        % Turn on grid
 
 %% Simulate
+udata = iddata([],zeros(length(DayPred),0),1);
 opt2 = simOptions('InitialCondition',[]);
-ysim2 = sim(model,data,opt2);
-ysim2.OutputData(:,2)
+SIRsim = sim(SIR,udata,opt2);
+Isim=round(SIRsim.OutputData(:,2));
+
+%% Growth factor
+growthFactorSIR= ([Isim; 0]./[0; Isim]);
+growthFactorSIR= (growthFactorSIR(2:end-1)-1)*100;
+gFSIR=mean(growthFactorSIR);
+
+
+
+
+
 %% Report
-R0est=model.Parameters(1).Value;
-dRest=model.Parameters(2).Value;
+R0est=SIR.Parameters(1).Value;
+dRest=SIR.Parameters(2).Value;
 %model.Report.Fit
-MSE=model.Report.Fit.MSE;
+MSE=SIR.Report.Fit.MSE;
