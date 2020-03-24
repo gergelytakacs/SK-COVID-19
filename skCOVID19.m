@@ -11,12 +11,19 @@ importData;
 
 load dataSKpred;
 
+% DS
+% nPOP=22768
+% lambda=195/y
+% mu=258/y
+
 fitbegin=1;
 
 d1=datetime(2020,3,6,'Format','d.M'); % First confirmed case
 pDay=10;                  % Days to predict  
 symptoms=5.1;              % Mean days before symptoms show
-popSize=5.45;            % Population size in millions
+
+%https://www.cia.gov/library/publications/the-world-factbook/geos/lo.html
+popSize=5.440602;            % Population size in millions
 nPop=popSize*1E6;        % Population size
 
 dt = d1+length(Day);       % Length of last data
@@ -25,8 +32,11 @@ dp = dt+pDay;              % End date ith prediction
 DatePred = datestr(d1:dp); % Date array for predictions
 
 
+%% Prepping
+Nd=cumsum(Confirmed);              % Number of total cases, cumulative sum of new confirmed cases
+R=cumsum(Recovered)+cumsum(Deaths);  % Number of total removals, cumulative sum of new recoveries and deaths
+I=Nd-R;                            % Number of actively infected is total cases - removed
 
-Nd=cumsum(Confirmed); % Number of daily cases, cumulative sum of confirmed cases
 
 %% Tests
 totTest=negTest+Nd; %Total tests performed
@@ -78,7 +88,8 @@ testB=fitresult.p2;
 
 
 
-SIR_ID %% SIR estimation procedure
+%SIR_ID %% SIR estimation procedure
+SIR_VD_ID
 outFigures
 
 
@@ -108,8 +119,8 @@ disp(['Odhad základného reprodukcného císla R0: ',num2str(round(R0est*10)/10),',
 disp(['Denná miera odstránenia prípadov 1/gamma: ',num2str(round(dRest*10)/10),', (MSE: ',num2str(MSE),')'])
 
 
-disp(['Overené prípady: ',num2str(Isim(max(Day)+1))])
-disp(['Nové overené prípady: ',num2str(Isim(max(Day)+1)-Nd(end))])
+disp(['Overené prípady: ',num2str(round(NdSIRnext))])
+disp(['Nové overené prípady: ',num2str(NdSIRnext-Nd(end))])
 disp(['Celkový predpokladaný pocet nakazených: ',num2str(Isim(max(Day)+round(symptoms)))])
 disp(['Predpokladaný dátum 1000+ overených prípadov: ',datestr(d1+min(find(Isim>1000)))])
 disp(['Predpokladaný dátum prvého nakazenia: ',datestr(d1-d0est)])

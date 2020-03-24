@@ -1,3 +1,9 @@
+% SIR homogeneus infection dynamics without vital dynamics
+% Fit from data, simulation and daily statistics
+% Gergely Takacs, March 2020
+% No guarantees given whatsoever.
+% See covid19.gergelytakacs.com for more
+
 I=Nd-Recovered;
 R=Recovered;
 
@@ -65,11 +71,7 @@ opt = simOptions('InitialCondition',[]);
 SIRsim = sim(SIR,udata,opt);
 Isim=round(SIRsim.OutputData(:,2));
 
-%% simulate to find zero day data
-opt2 = simOptions('InitialCondition',[nPop-1; 1; 0]);
-SIRsim2 = sim(SIR,udata,opt2);
-Isim2=round(SIRsim2.OutputData(:,2));
-d0est= max(find(Isim2<N0est));
+
 
 %% Growth factor
 growthFactorSIR= ([Isim; 0]./[0; Isim]);
@@ -84,3 +86,9 @@ dRest=SIR.Parameters(2).Value;
 N0est=SIR.InitialStates(2).Value;
 %model.Report.Fit
 MSE=SIR.Report.Fit.MSE;
+
+%% simulate to find zero day data
+opt2 = simOptions('InitialCondition',[nPop-1; 1; 0]);
+SIRsim2 = sim(SIR,udata,opt2);
+Isim2=round(SIRsim2.OutputData(:,2));
+d0est= max(find(Isim2<N0est));

@@ -1,3 +1,9 @@
+% SIR homogeneus infection dynamics without vital dynamics
+% This is just the state-space model of the dynamics
+% Gergely Takacs, March 2020
+% No guarantees given whatsoever.
+% See covid19.gergelytakacs.com for more
+
 function [dx y] = SIR_ODE(t, x, u, R0, dR, varargin)
 
 gamma = 1/dR;                            % Case removal rate 1/g = e.g. 14 [days]
@@ -9,11 +15,4 @@ y=[x(1); x(2); x(3)];                     % All is measured
 dx(1) = - beta*x(2)*x(1)/N;              % (S) Differential equation for Susceptible cases
 dx(2) =   beta*x(2)*x(1)/N - gamma*x(2); % (I) Differential equation for Infected cases
 dx(3) =   gamma*x(2);                    % (R) Differential equation for Removed cases
-
- 
-% y=[x(1); x(2); x(3)];                     % All is measured
-% dx(1) = - (R0/dR)*x(2)*x(1)/(x(1) + x(2) + x(3));              % (S) Differential equation for Susceptible cases
-% dx(2) =   (R0/dR)*x(2)*x(1)/x(1) + x(2) + x(3) - (1/dR)*x(2); % (I) Differential equation for Infected cases
-% dx(3) =   (1/dR)*x(2);                    % (R) Differential equation for Removed cases
-                                   
 end
