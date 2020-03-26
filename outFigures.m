@@ -100,42 +100,43 @@ print(['skCOVID19_Tests_',datestr(dt)],'-dpdf','-r0')
 cd ..
 
 %% Residuals
-
-figure(4)
-
-patch([0 max(Day), max(Day) 0 ],[mean(NdResiduals)+std(NdResiduals) mean(NdResiduals)+std(NdResiduals),mean(NdResiduals)-std(NdResiduals) mean(NdResiduals)-std(NdResiduals)],'b','EdgeAlpha',0,'FaceAlpha',0.2) % Confidence intervals
-patch([0 max(Day), max(Day) 0 ],[mean(NdResiduals)+2*std(NdResiduals) mean(NdResiduals)+2*std(NdResiduals),mean(NdResiduals)-2*std(NdResiduals) mean(NdResiduals)-2*std(NdResiduals)],'b','EdgeAlpha',0,'FaceAlpha',0.1) % Confidence intervals
-
-patch([0 max(Day), max(Day) 0 ],[mean(Isim(1:max(Day))-Nd)+std(Isim(1:max(Day))-Nd) mean(Isim(1:max(Day))-Nd)+std(Isim(1:max(Day))-Nd),mean(Isim(1:max(Day))-Nd)-std(Isim(1:max(Day))-Nd) mean(Isim(1:max(Day))-Nd)-std(Isim(1:max(Day))-Nd)],'r','EdgeAlpha',0,'FaceAlpha',0.2) % Confidence intervals
-patch([0 max(Day), max(Day) 0 ],[mean(Isim(1:max(Day))-Nd)+2*std(Isim(1:max(Day))-Nd) mean(Isim(1:max(Day))-Nd)+2*std(Isim(1:max(Day))-Nd),mean(Isim(1:max(Day))-Nd)-2*std(Isim(1:max(Day))-Nd) mean(Isim(1:max(Day))-Nd)-2*std(Isim(1:max(Day))-Nd)],'r','EdgeAlpha',0,'FaceAlpha',0.1) % Confidence intervals
-
-hold on
-plot(Day,NdResiduals,'.-','LineWidth',2) % Predicted Shifted Cases
-grid on
-plot(Day,Isim(1:max(Day))-Nd,'.-','LineWidth',2) % Predicted Shifted Cases
-
-xticks(DayPred)
-xticklabels(DatePred)
-xtickangle(90)
-xlabel('Date')
-ylabel('Cases (difference)')
-legend('1 sigma (Exponential)','2 sigma (Exponential)','1 sigma (SIR)','2 sigma (SIR)','Case residuals (Exponential)','Case residuals (SIR)','Location','northwest')
-title(['SARS-CoV-2 Case prediction residuals for Slovakia, ',datestr(dt)])
-%axis([1,max(Day)+1,0,max(totTest)])
-text(0.5,-40,'covid19.gergelytakacs.com','FontSize',10,'rotation',90,'Color',[0.7 0.7 0.7])
-cd out
-print(['skCOVID19_Residuals_',datestr(dt)],'-dpng','-r0')
-print(['skCOVID19_Residuals_',datestr(dt)],'-dpdf','-r0')
-cd ..
+% 
+% figure(4)
+% 
+% patch([0 max(Day), max(Day) 0 ],[mean(NdResiduals)+std(NdResiduals) mean(NdResiduals)+std(NdResiduals),mean(NdResiduals)-std(NdResiduals) mean(NdResiduals)-std(NdResiduals)],'b','EdgeAlpha',0,'FaceAlpha',0.2) % Confidence intervals
+% patch([0 max(Day), max(Day) 0 ],[mean(NdResiduals)+2*std(NdResiduals) mean(NdResiduals)+2*std(NdResiduals),mean(NdResiduals)-2*std(NdResiduals) mean(NdResiduals)-2*std(NdResiduals)],'b','EdgeAlpha',0,'FaceAlpha',0.1) % Confidence intervals
+% 
+% patch([0 max(Day), max(Day) 0 ],[mean(Isim(1:max(Day))-Nd)+std(Isim(1:max(Day))-Nd) mean(Isim(1:max(Day))-Nd)+std(Isim(1:max(Day))-Nd),mean(Isim(1:max(Day))-Nd)-std(Isim(1:max(Day))-Nd) mean(Isim(1:max(Day))-Nd)-std(Isim(1:max(Day))-Nd)],'r','EdgeAlpha',0,'FaceAlpha',0.2) % Confidence intervals
+% patch([0 max(Day), max(Day) 0 ],[mean(Isim(1:max(Day))-Nd)+2*std(Isim(1:max(Day))-Nd) mean(Isim(1:max(Day))-Nd)+2*std(Isim(1:max(Day))-Nd),mean(Isim(1:max(Day))-Nd)-2*std(Isim(1:max(Day))-Nd) mean(Isim(1:max(Day))-Nd)-2*std(Isim(1:max(Day))-Nd)],'r','EdgeAlpha',0,'FaceAlpha',0.1) % Confidence intervals
+% 
+% hold on
+% plot(Day,NdResiduals,'.-','LineWidth',2) % Predicted Shifted Cases
+% grid on
+% plot(Day,Isim(1:max(Day))-Nd,'.-','LineWidth',2) % Predicted Shifted Cases
+% 
+% xticks(DayPred)
+% xticklabels(DatePred)
+% xtickangle(90)
+% xlabel('Date')
+% ylabel('Cases (difference)')
+% legend('1 sigma (Exponential)','2 sigma (Exponential)','1 sigma (SIR)','2 sigma (SIR)','Case residuals (Exponential)','Case residuals (SIR)','Location','northwest')
+% title(['SARS-CoV-2 Case prediction residuals for Slovakia, ',datestr(dt)])
+% %axis([1,max(Day)+1,0,max(totTest)])
+% text(0.5,-40,'covid19.gergelytakacs.com','FontSize',10,'rotation',90,'Color',[0.7 0.7 0.7])
+% cd out
+% print(['skCOVID19_Residuals_',datestr(dt)],'-dpng','-r0')
+% print(['skCOVID19_Residuals_',datestr(dt)],'-dpdf','-r0')
+% cd ..
 
 %% Output (Infected)
 figure(5)
 
-plot(Day,I,'o','MarkerSize',6)
+plot(Day,I,'-o','MarkerSize',6)
 hold on
-plot(DayPred,Isim)
 grid on
-plot(DayPred(1:end-round(symptoms)),Isim(round(symptoms)+1:end))
+plot(DayPred(max(Day):end-1),IsimPred,'--','Color',blue)      % Prediction only
+plot(Day(SIR_fitBegin:end),IsimFit)      % Prediction only
+plot(-symptoms:1:(length(IsimSymptoms)-symptoms-1),IsimSymptoms)
 
 
 xticks(DayPred)
@@ -143,8 +144,8 @@ xticklabels(DatePred)
 xtickangle(90)
 xlabel('Date')
 ylabel('Cases')
-legend('Infected (data)','Infected (SIR model)','Total Infected (SIR model, 5d shift)','Location','northwest')
-title(['SARS-CoV-2 Infections in Slovakia: SIR model, ',datestr(dt)])
+legend('Infections (data)','Predicted infections (SIR model)','SIR model fit','Total Infected (SIR model, 5d shift)','Location','northwest')
+title(['SARS-CoV-2 Infections in Slovakia: SIR model w/ vital dynamics, ',datestr(dt)])
 axis([0,length(DayPred),0,NdSymptoms(max(Day)+1)])
 text(0.5,0.9,'covid19.gergelytakacs.com/','FontSize',10,'rotation',90,'Color',[0.7 0.7 0.7])
 fig = gcf;
