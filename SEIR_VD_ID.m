@@ -58,6 +58,9 @@ SEIR_VDinit = idnlgrey(FileName,Order,Parameters,InitialStates,Ts,'TimeUnit','da
 SEIR_VDinit = setpar(SEIR_VDinit,'Name',{'beta (exposure rate)','sigma (infection rate)','gamma (removal rate)','lambda (birth rate)','mu (death rate)'});
 SEIR_VDinit = setinit(SEIR_VDinit,'Name',{'Susceptible' 'Exposed' 'Infected' 'Removed'});
 
+
+% --------------Parameters--------------------
+
 % S->E Exposure (contact) rate beta (1/beta in days)
 SEIR_VDinit.Parameters(1).Minimum = 1/31;      % [1/days] Cannot be reasonably more than 20 days      
 SEIR_VDinit.Parameters(1).Maximum = 1/(1/24);  % [1/days] Cannot be reasonably less than an hour days      
@@ -75,20 +78,21 @@ SEIR_VDinit.Parameters(3).Fixed = false;
 
 % Birth rate lambda (1/lambda)           % Birth rate will not be changed
                                          % by the epidemic. (Yet. :)
-SEIR_VDinit.Parameters(4).Minimum = lambda-0.2*lambda; % -20%
-SEIR_VDinit.Parameters(4).Maximum = lambda+0.2*lambda; % +20%
+SEIR_VDinit.Parameters(4).Minimum = lambda-0.25*lambda; % -25%
+SEIR_VDinit.Parameters(4).Maximum = lambda+0.25*lambda; % +25%
 SEIR_VDinit.Parameters(4).Fixed = false; 
 
 
 % Death rate mu (1/mu)                   % Consider changing this, maybe
-SEIR_VDinit.Parameters(5).Minimum = 0;   % after first death begin. Since the pandemic deaths are not counted for
-SEIR_VDinit.Parameters(5).Maximum = 1;   % the normal death rate. Or as a slack variable?
+SEIR_VDinit.Parameters(5).Minimum = mu-0.25*mu;   % after first death begin. Since the pandemic deaths are not counted for
+SEIR_VDinit.Parameters(5).Maximum = mu+0.25*mu;   % the normal death rate. Or as a slack variable?
 SEIR_VDinit.Parameters(5).Fixed = false;
+
 % --------------Initial conditions--------------------
 % Susceptibles
 SEIR_VDinit.InitialStates(1).Fixed = true;
 
-SEIR_VDinit.InitialStates(2).Fixed = false;   % Let this parameter free, overall results will be better. True number unknown anyways
+SEIR_VDinit.InitialStates(2).Fixed = true;   % Let this parameter free, overall results will be better. True number unknown anyways
 SEIR_VDinit.InitialStates(2).Minimum = 0;     % Cannot be negative
 SEIR_VDinit.InitialStates(2).Maximum = 100;   % Unlikely to be more
 
@@ -96,7 +100,7 @@ SEIR_VDinit.InitialStates(3).Fixed = false;   % Yet again, we can let this param
 SEIR_VDinit.InitialStates(3).Minimum = 0;
 SEIR_VDinit.InitialStates(3).Maximum = 100;
 
-SEIR_VDinit.InitialStates(4).Fixed = false;   % Yet again, we can let this parameter free.
+SEIR_VDinit.InitialStates(4).Fixed = true;   % Yet again, we can let this parameter free.
 SEIR_VDinit.InitialStates(4).Minimum = 0;
 SEIR_VDinit.InitialStates(4).Maximum = 100;
 
@@ -116,9 +120,9 @@ SEIR_VD = nlgreyest(dataToFit,SEIR_VDinit,opt);              % Run identificatio
 
 
 %% Just internal comparison, not to output
+disp(['SEIR model fit for I (x(3)) is: ',num2str(round(SEIR_VD.Report.Fit.FitPercent(2)*10)/10),'%'])
 
-round(SEIR_VD.Report.Fit.FitPercent(2)*10)/10
-round(SEIR_VD.Report.Fit.FitPercent*10)/1
+%round(SEIR_VD.Report.Fit.FitPercent*10)/1
 compare(dataToFit,SEIR_VD);                           % Compare data to model
 hold off
 grid on
