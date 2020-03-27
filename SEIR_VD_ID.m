@@ -38,9 +38,11 @@ dataToFit=data(SIR_fitBegin:end);    % Create dataset itslef.
 
 
 %% Initial guess of model parameters
-beta  =1/ 1;      % [1/day] exposure/contact rate
-sigma =1/ 4;       % [1/day] infection rate
-gamma =1/ 15.5;    % [1/day] removal rate
+% Incubation period 2-14 days, 5.2 mean https://www.worldometers.info/coronavirus/coronavirus-incubation-period/
+% is S-E-I the incubation period?
+beta  =1/ 1;       % [1/day] exposure/contact rate
+sigma =1/ 5;       % [1/day] infection rate (latent period)
+gamma =1/ 15.5;    % [1/day] removal rate   (infectious period)
 E0=3;            % [cases] Number of exposed at initial state
 
 %% Model structure
