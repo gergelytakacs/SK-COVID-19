@@ -16,46 +16,42 @@ demDeath= 53234; % [people] Deaths in 2019 (total)
 dayYear=365;     % [days]   2019 was not a leap year
 demBirthDay=demBirth/365; % [people] Average birth per day in 2019
 demDeathDay=demDeath/365; % [people] Average death per day in 2019
-
 lambda = demBirthDay/nPop; % This is adjusted for the population
 mu     = demDeathDay/nPop; % This is adjusted for the population
-
 % CIA 2020 est is 9.3 births / 1000 pop and 10.1 / 1000 pop.
 % Using last year data though.
-
 %% Prepping data
-
 
 R=cumsum(Recovered)+cumsum(Deaths);  % Number of total removals, cumulative sum of new recoveries and deaths
 I=Nd-R;                              % Number of actively infected is total cases - removed
 S=nPop*(1+(lambda-mu)*Day)-I-R;      % Susceptible population left, adjusted for vital dynamics
-SIR_fitBegin      = min(find(I>=10));                      % Day to begin fit
 
+SIR_fitBegin      = min(find(I>=10));% Day to begin fit
+SIR_fitBegin = 1                     % Manual override because so far it has no meaning to do this
 
-Ts = 1;                                         % Sampling [1 day]
-data = iddata([S I R],[],Ts);                          % Create identification data object
-data.TimeUnit='days';
+Ts = 1;                              % Sampling [1 day]
+data = iddata([S I R],[],Ts);        % Create identification data object
+data.TimeUnit='days';                % Time units
 data.OutputName = [{'Susceptible'};{'Infected'};{'Removed'}];              % Output name
 data.OutputUnit = [{'Cases'};{'Cases'};{'Cases'}];                          % Output unit
-dataToFit=data(SIR_fitBegin:end);
-
+dataToFit=data(SIR_fitBegin:end);    % Create dataset itslef.
 
 %% Initial guess of model parameters
-beta=1/5; % 1/day infection rate
-gamma=1/18; % 1/day removal rate
+beta=1/10; % 1/day infection rate
+gamma=1/15.5; % 1/day removal rate
 
 
 %% Model structure
 
-FileName             = 'SIR_VD_ODE';           % File describing the SIR model structure
-Order                = [3 0 3];                % Model orders [ny nu nx]
+FileName             = 'SIR_VD_ODE';                % File describing the SIR model structure
+Order                = [3 0 3];                     % Model orders [ny nu nx]
 Parameters           = [beta,gamma,lambda,mu];      % Initial values of parameters
 InitialStates        = [S(SIR_fitBegin);I(SIR_fitBegin);R(SIR_fitBegin )];  % Initial values of  [S I R] states
-Ts                   = 0;                      % Time-continuous system
+Ts                   = 0;                           % Time-continuous system
 
 % Set identification options
 SIR_VDinit = idnlgrey(FileName,Order,Parameters,InitialStates,Ts,'TimeUnit','days','Name','SIR Model');
-SIR_VDinit = setpar(SIR_VDinit,'Name',{'R0','dR (Removal rate)','lambda (Birth rate)','mu (Death rate)'});
+SIR_VDinit = setpar(SIR_VDinit,'Name',{'beta (infection rate)','gamma (removal rate)','lambda (birth rate)','mu (death rate)'});
 SIR_VDinit = setinit(SIR_VDinit,'Name',{'Susceptible' 'Infected' 'Removed'});
 
 % Contact rate beta (1/beta in days)
@@ -70,7 +66,10 @@ SIR_VDinit.Parameters(2).Fixed = true;
 
 % Birth rate lambda (1/lambda)           % Birth rate will not be changed
                                          % by the epidemic. (Yet. :)
+SIR_VDinit.Parameters(4).Minimum = lambda-0.2*lambda; % -20%
+SIR_VDinit.Parameters(4).Maximum = lambda+0.2*lambda; % +20%
 SIR_VDinit.Parameters(3).Fixed = true; 
+
 
 % Death rate mu (1/mu)                   % Consider changing this, maybe
 % SIR_VDinit.Parameters(4).Minimum = 100;   % after first death begin. Since the pandemic deaths are not counted for
@@ -79,7 +78,7 @@ SIR_VDinit.Parameters(4).Fixed = true;
 
 % --------------Initial conditions--------------------
 % Susceptibles
-SIR_VDinit.InitialStates(1).Fixed = false;
+SIR_VDinit.InitialStates(1).Fixed = true;
 
 SIR_VDinit.InitialStates(2).Fixed = false;   % Let this parameter free, overall results will be better. True number unknown anyways
 SIR_VDinit.InitialStates(2).Minimum = 0;     % Cannot be negative
@@ -98,10 +97,13 @@ SIR_VDinit.InitialStates(3).Maximum = 100;
 %return
 
 % Identify model
-opt = nlgreyestOptions('Display','on','EstCovar',true,'SearchMethod','Auto'); %gna
+opt = nlgreyestOptions('Display','off','EstCovar',true,'SearchMethod','Auto'); %gna
 opt.SearchOption.MaxIter = 50;                % Maximal number of iterations
 SIR_VD = nlgreyest(dataToFit,SIR_VDinit,opt);              % Run identification procedure
-    
+
+
+round(SIR_VD.Report.Fit.FitPercent(2)*10)/10
+round(SIR_VD.Report.Fit.FitPercent*10)/10
 %% Just internal comparison, not to output
 %compare(dataToFit,SIR_VD);                           % Compare data to model
 %SIR_VD                                          % List model parameters
@@ -152,6 +154,7 @@ udataSymptoms = iddata([],zeros(max(DayPred),0),1);
 optSymptoms = simOptions('InitialCondition',[SIR_VD.InitialStates(1).Value;SIR_VD.InitialStates(2).Value;SIR_VD.InitialStates(3).Value]);
 SIRsimSymptoms = sim(SIR_VD,udataSymptoms,optSymptoms);
 IsimSymptoms=round(SIRsimSymptoms.OutputData(:,2));
+
 
 
 
