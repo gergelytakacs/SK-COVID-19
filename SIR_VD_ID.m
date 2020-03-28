@@ -27,7 +27,7 @@ I=Nd-R;                              % Number of actively infected is total case
 S=nPop*(1+(lambda-mu)*Day)-I-R;      % Susceptible population left, adjusted for vital dynamics
 
 SIR_fitBegin      = min(find(I>=10));% Day to begin fit
-SIR_fitBegin = 1                     % Manual override because so far it has no meaning to do this
+SIR_fitBegin = 1                    % Manual override because so far it has no meaning to do this
 
 Ts = 1;                              % Sampling [1 day]
 data = iddata([S I R],[],Ts);        % Create identification data object
@@ -38,7 +38,7 @@ dataToFit=data(SIR_fitBegin:end);    % Create dataset itslef.
 
 %% Initial guess of model parameters
 beta=1/10; % 1/day infection rate
-gamma=1/15.5; % 1/day removal rate
+gamma=1/20; % 1/day removal rate
 
 
 %% Model structure
@@ -66,15 +66,15 @@ SIR_VDinit.Parameters(2).Fixed = true;
 
 % Birth rate lambda (1/lambda)           % Birth rate will not be changed
                                          % by the epidemic. (Yet. :)
-SIR_VDinit.Parameters(4).Minimum = lambda-0.2*lambda; % -20%
-SIR_VDinit.Parameters(4).Maximum = lambda+0.2*lambda; % +20%
-SIR_VDinit.Parameters(3).Fixed = true; 
+SIR_VDinit.Parameters(3).Minimum = lambda-0.2*lambda; % -20%
+SIR_VDinit.Parameters(3).Maximum = lambda+0.2*lambda; % +20%
+SIR_VDinit.Parameters(3).Fixed = false; 
 
 
 % Death rate mu (1/mu)                   % Consider changing this, maybe
-% SIR_VDinit.Parameters(4).Minimum = 100;   % after first death begin. Since the pandemic deaths are not counted for
-% SIR_VDinit.Parameters(4).Maximum = 1000;   % the normal death rate. Or as a slack variable?
-SIR_VDinit.Parameters(4).Fixed = true;
+SIR_VDinit.Parameters(4).Minimum = mu-0.2*mu; % -20%
+SIR_VDinit.Parameters(4).Maximum = mu+0.2*mu; % +20%
+SIR_VDinit.Parameters(4).Fixed = false; 
 
 % --------------Initial conditions--------------------
 % Susceptibles
@@ -85,8 +85,8 @@ SIR_VDinit.InitialStates(2).Minimum = 0;     % Cannot be negative
 SIR_VDinit.InitialStates(2).Maximum = 100;   % Unlikely to be more
 
 SIR_VDinit.InitialStates(3).Fixed = false;   % Yet again, we can let this parameter free.
-SIR_VDinit.InitialStates(3).Minimum = 0;
-SIR_VDinit.InitialStates(3).Maximum = 100;
+SIR_VDinit.InitialStates(3).Minimum = -1000;
+SIR_VDinit.InitialStates(3).Maximum = 1000;
 
 %% Simulate initial guess
 % udata = iddata([],zeros(365,0),1);
@@ -103,7 +103,10 @@ SIR_VD = nlgreyest(dataToFit,SIR_VDinit,opt);              % Run identification 
 
 
 round(SIR_VD.Report.Fit.FitPercent(2)*10)/10
-round(SIR_VD.Report.Fit.FitPercent*10)/10
+%round(SIR_VD.Report.Fit.FitPercent*10)/10
+
+
+
 %% Just internal comparison, not to output
 %compare(dataToFit,SIR_VD);                           % Compare data to model
 %SIR_VD                                          % List model parameters

@@ -82,7 +82,7 @@ figure(3)
 hold on
 plot(Day,totTest,'.-','LineWidth',2) % Predicted Shifted Cases
 bar(Day(2:end),newTest) % Confirmed new cases
-plot(Day(2:end),testA.*Day(2:end)+testB,'k--')
+plot(Day(end-7+1:end),testA.*Day(end-7+1:end)+newTest(end-7+1),'k--')
 grid on
 
 xticks(DayPred)

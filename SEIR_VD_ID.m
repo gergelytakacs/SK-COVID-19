@@ -126,7 +126,7 @@ disp(['SEIR model fit for I (x(3)) is: ',num2str(round(SEIR_VD.Report.Fit.FitPer
 compare(dataToFit,SEIR_VD);                           % Compare data to model
 hold off
 grid on
-return
+
 
 %% Simulate for fit
 udataFit = iddata([],zeros(max(Day)-SIR_fitBegin+1,0),1);
