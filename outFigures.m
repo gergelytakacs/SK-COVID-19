@@ -1,26 +1,25 @@
-
-%% Colors
-blue   = [0    0.4470    0.7410];
-orange = [0.8500    0.3250    0.0980];
-
-%% Cases
+close all;
 
 
-figure(1)
+%% Cases (Exponential)
+
+h =  findobj('type','figure');
+n = length(h);
+figure(n+1)
 
 patch([DayPred(max(Day):end), DayPred(end:-1:max(Day)), DayPred(max(Day))],[NdPredLow, NdPredHigh(end:-1:1),NdPredLow(1)],'r','EdgeAlpha',0,'FaceAlpha',0.2) % Confidence intervals
 hold on
 grid on
-patch([DayPred, DayPred(end:-1:1), DayPred(1)],[NdSymptomsLow, NdSymptomsHigh(end:-1:1),NdSymptomsLow(1)],'b','EdgeAlpha',0,'FaceAlpha',0.2) % Confidence intervals
+patch([DayPred, DayPred(end:-1:1), DayPred(1)],[NdSymptomsLow, NdSymptomsHigh(end:-1:1),NdSymptomsLow(1)],'y','EdgeAlpha',0,'FaceAlpha',0.2) % Confidence intervals
 
-plot(Day,Nd,'.-','LineWidth',2,'Color',blue,'Marker','.','MarkerSize',12) % Confirmed cumulative cases
+plot(Day,Nd,'o-','LineWidth',2,'Color',blue,'MarkerSize',6) % Confirmed cumulative cases
 bar(Day,Confirmed) % Confirmed new cases
-plot(DayPred,NdPredicted,'Color',orange,'LineWidth',1) % Predicted cases
+plot(DayPred(fitbegin:end),NdPredicted(fitbegin:end),'Color',orange,'LineWidth',1.5) % Predicted cases
 
-plot(DayPred,NdSymptoms) % Predicted Shifted Cases
+plot(DayPred,NdSymptoms,'Color',yellow,'LineWidth',1) % Predicted Shifted Cases
 
 % Previous predictions
-plot(dataSKpred(:,1),dataSKpred(:,2),'k.')
+plot(dataSKpred(:,1),dataSKpred(:,2),'k.','MarkerSize',10)
 errorbar(dataSKpred(:,1),dataSKpred(:,2),dataSKpred(:,2)-dataSKpred(:,3),dataSKpred(:,2)-dataSKpred(:,4),'k')
 
 xticks(DayPred)
@@ -28,34 +27,42 @@ xticklabels(DatePred)
 xtickangle(90)
 xlabel('Date')
 ylabel('Cases')
-legend('95% Confidence (Confirmed prediction)','95% Confidence (Total, 5 d shift)','Cumulative confirmed','New confirmed',['Exp. Approximation (Confirmed) R^2=',num2str(R2)],['Exp. Approximation (Total)'],'Location','northwest')
+legend('95% Confidence (Confirmed prediction)','95% Confidence (Total, 5 d shift)','Cumulative confirmed','New confirmed',['Exp. Approximation (Confirmed) R^2=',num2str(R2)],['Exp. Approximation (Total), 5 d shift'],'Location','northwest')
 title(['SARS-CoV-2 Cases in Slovakia: Exponential model, ',datestr(dt)])
-axis([0,length(DayPred),0,NdSymptoms(max(Day)+1)])
+
 text(0.5,0.9,'covid19.gergelytakacs.com','FontSize',10,'rotation',90,'Color',[0.7 0.7 0.7])
 fig = gcf;
 fig.PaperUnits = 'centimeters';
 fig.PaperPosition = [0 0 20 10];
 
+axis([0,length(Day)+7,0,NdSymptoms(length(Day)+7)])
+
 cd out
 print(['skCOVID19_Exp_Cases_',datestr(dt)],'-dpng','-r0')
-print(['skCOVID19_Exp_Cases_',datestr(dt)],'-dpdf','-r0')
+%print(['skCOVID19_Exp_Cases_',datestr(dt)],'-dpdf','-r0')
 
 axis([0,length(Day)+1,0,dataSKpred(end,4)])
 
 print(['skCOVID19_Exp_Cases_Detail',datestr(dt)],'-dpng','-r0')
-print(['skCOVID19_Exp_Cases_Detail',datestr(dt)],'-dpdf','-r0')
+%print(['skCOVID19_Exp_Cases_Detail',datestr(dt)],'-dpdf','-r0')
 cd ..
 
 
 %% Growth factor
 
-figure(2)
+h =  findobj('type','figure');
+n = length(h);
+figure(n+1)
 
 % Previous predictions
-plot(dataSKpred(:,1)-1,(dataSKpred(:,5)-1)*100,'k.')
+plot(dataSKpred(:,1)-1,(dataSKpred(:,5)-1)*100,'k.','MarkerSize',10)
 hold on
 errorbar(dataSKpred(:,1)-1,(dataSKpred(:,5)-1)*100,(dataSKpred(:,6)-1)*100-(dataSKpred(:,5)-1)*100,(dataSKpred(:,7)-1)*100-(dataSKpred(:,5)-1)*100,'k')
 plot(dataSKpred(:,1)-1,(dataSKpred(:,8)-1)*100,'kx')
+plot(dataSKpred(:,1)-1,(dataSKpred(:,11)),'kv')
+
+
+
 hold on
 grid on
 
@@ -66,23 +73,25 @@ xticklabels(DatePred)
 xtickangle(90)
 xlabel('Date')
 ylabel('Growth factor [%]')
-legend('Growth factor (exponential fit)','Growth factor (exponential fit, conf.)','Growth factor (SIR)','Growth factor (data)','Location','northwest')
+legend('Growth factor (exponential fit)','Growth factor (exponential fit, conf.)','Growth factor (SIR)','Growth factor (polynomial fit)','Growth factor (data)','Location','northeast')
 title(['SARS-CoV-2 Growth factor in Slovakia, ',datestr(dt)])
-axis([2,length(Day+1),0,150])
+axis([12,length(Day)+1,0,50])
 text(2.5,0.9,'covid19.gergelytakacs.com','FontSize',10,'rotation',90,'Color',[0.7 0.7 0.7])
 cd out
 print(['skCOVID19_GrowthFactor_',datestr(dt)],'-dpng','-r0')
-print(['skCOVID19_GrowthFactor_',datestr(dt)],'-dpdf','-r0')
+%print(['skCOVID19_GrowthFactor_',datestr(dt)],'-dpdf','-r0')
 cd ..
 
 %% Testing
 
-figure(3)
+h =  findobj('type','figure');
+n = length(h);
+figure(n+1)
 
 hold on
 plot(Day,totTest,'.-','LineWidth',2) % Predicted Shifted Cases
 bar(Day(2:end),newTest) % Confirmed new cases
-plot(Day(end-7+1:end),testA.*Day(end-7+1:end)+newTest(end-7+1),'k--')
+plot(Day(end-7+1:end),testA.*Day(end-7+1:end)+newTest(end-7+1),'k--','LineWidth',1.5)
 grid on
 
 xticks(DayPred)
@@ -91,12 +100,12 @@ xtickangle(90)
 xlabel('Date')
 ylabel('Tests')
 legend('Total tests','New Tests','Trend','Location','northwest')
-title(['SARS-CoV-2 Tests in Slovakia, ',datestr(dt)])
+title(['SARS-CoV-2 Testing in Slovakia, ',datestr(dt)])
 axis([1,max(Day)+1,0,max(totTest)])
 text(1.5,100,'covid19.gergelytakacs.com','FontSize',10,'rotation',90,'Color',[0.7 0.7 0.7])
 cd out
 print(['skCOVID19_Tests_',datestr(dt)],'-dpng','-r0')
-print(['skCOVID19_Tests_',datestr(dt)],'-dpdf','-r0')
+%print(['skCOVID19_Tests_',datestr(dt)],'-dpdf','-r0')
 cd ..
 
 %% Residuals
@@ -128,39 +137,95 @@ cd ..
 % print(['skCOVID19_Residuals_',datestr(dt)],'-dpdf','-r0')
 % cd ..
 
-%% Output (Infected)
-figure(5)
+%% SIR Output (Infected)
 
-plot(Day,I,'-o','MarkerSize',6)
+h =  findobj('type','figure');
+n = length(h);
+figure(n+1)
+
+plot(Day,I,'-o','MarkerSize',6,'LineWidth',2)
 hold on
 grid on
-plot(DayPred(max(Day):end-1),IsimPred,'--','Color',blue)      % Prediction only
-plot(Day(SIR_fitBegin:end),IsimFit)      % Prediction only
-plot(-symptoms:1:(length(IsimSymptoms)-symptoms-1),IsimSymptoms)
-
+bar(Day,Confirmed) % Confirmed new cases
+plot(DayPred(max(Day):end-1),IsimPred,'--','Color',blue,'LineWidth',1.5)      % Prediction only
+plot(Day(SIR_fitBegin:end),IsimFit,'LineWidth',1.5,'Color',orange)      % Prediction only
+plot(-symptoms:1:(length(IsimSymptoms)-symptoms-1),IsimSymptoms,'Color',yellow,'LineWidth',1)
+plot(dataSKpred(:,1),dataSKpred(:,9),'kx','MarkerSize',10)
 
 xticks(DayPred)
 xticklabels(DatePred)
 xtickangle(90)
 xlabel('Date')
 ylabel('Cases')
-legend('Infections (data)','Predicted infections (SIR model)','SIR model fit','Total Infected (SIR model, 5d shift)','Location','northwest')
+legend('Infections (data)','New infections (data)','Predicted infections (SIR model)','SIR model fit','Total Infected (SIR model, 5d shift)','Predictions','Location','northwest')
 title(['SARS-CoV-2 Infections in Slovakia: SIR model w/ vital dynamics, ',datestr(dt)])
-axis([0,length(DayPred),0,NdSymptoms(max(Day)+1)])
-text(0.5,0.9,'covid19.gergelytakacs.com/','FontSize',10,'rotation',90,'Color',[0.7 0.7 0.7])
+axis([0,length(Day)+7,0,NdSymptoms(length(Day)+7)])
+text(0.5,0.9,'covid19.gergelytakacs.com','FontSize',10,'rotation',90,'Color',[0.7 0.7 0.7])
 fig = gcf;
 fig.PaperUnits = 'centimeters';
 fig.PaperPosition = [0 0 20 10];
 
 cd out
 print(['skCOVID19_SIR_Cases_',datestr(dt)],'-dpng','-r0')
-print(['skCOVID19_SIR_Cases_',datestr(dt)],'-dpdf','-r0')
+%print(['skCOVID19_SIR_Cases_',datestr(dt)],'-dpdf','-r0')
 
 axis([0,length(Day)+1,0,dataSKpred(end,4)])
 
 print(['skCOVID19_SIR_Cases_Detail',datestr(dt)],'-dpng','-r0')
-print(['skCOVID19_SIR_Cases_Detail',datestr(dt)],'-dpdf','-r0')
+%print(['skCOVID19_SIR_Cases_Detail',datestr(dt)],'-dpdf','-r0')
 cd ..
+
+
+%% Semilogy
+
+h =  findobj('type','figure');
+n = length(h);
+figure(n+1)
+
+semilogy(Day,Nd,'o-','LineWidth',2,'Color',blue,'MarkerSize',6) % Confirmed cumulative cases
+hold on
+grid on
+
+plot(DayPred,NdPredictedPoly,'Color',orange,'LineWidth',1.5) % Predicted cases
+
+plot(DayPred,NdPredicted,'Color',orange,'LineWidth',1,'LineStyle',':') % Predicted cases
+
+%plot(DayPred,NdPredictedNoN0,'Color',orange,'LineWidth',1,'LineStyle','--') % Predicted cases
+
+
+plot(Day(fitbegin:end),IsimFit,'LineWidth',0.5,'LineStyle','--','Color',orange) % Predicted cases
+
+%plot(DayPred,NdSymptomsPoly,'Color',yellow,'LineWidth',1) % Predicted Shifted Cases
+
+%plot(dataSKpred(:,1),dataSKpred(:,10),'k','Marker','v','MarkerSize',6) % Predicted Shifted Cases
+
+% Previous predictions
+%plot(dataSKpred(:,1),dataSKpred(:,2),'k.')
+%errorbar(dataSKpred(:,1),dataSKpred(:,2),dataSKpred(:,2)-dataSKpred(:,3),dataSKpred(:,2)-dataSKpred(:,4),'k')
+
+xticks(DayPred)
+xticklabels(DatePred)
+xtickangle(90)
+xlabel('Date')
+ylabel('Cases')
+%legend('95% Confidence (Confirmed prediction)','95% Confidence (Total, 5 d shift)','Cumulative confirmed','New confirmed',['Poly. Approximation (Confirmed) R^2=',num2str(R2)],['Exp. Approximation (Total), 5 d shift'],'Location','northwest')
+legend('Cumulative confirmed','Polynomial fit','Exponential fit','SIR Model','Location','southeast')
+title(['SARS-CoV-2 Cases in Slovakia: Logarithmic view and comparison, ',datestr(dt)])
+axis([0,length(Day)+1,0,NdPredictedPoly(max(Day)+1)])
+text(0.5,0.9,'covid19.gergelytakacs.com','FontSize',10,'rotation',90,'Color',[0.7 0.7 0.7])
+fig = gcf;
+fig.PaperUnits = 'centimeters';
+fig.PaperPosition = [0 0 20 10];
+
+cd out
+print(['skCOVID19_Logarithmic_Cases_',datestr(dt)],'-dpng','-r0')
+axis([12,length(Day)+1,100,dataSKpred(end,4)])
+print(['skCOVID19_Logarithmic_Cases_Detail',datestr(dt)],'-dpng','-r0')
+
+% print(['skCOVID19_Poly_Cases_Detail',datestr(dt)],'-dpng','-r0')
+% %print(['skCOVID19_Poly_Cases_Detail',datestr(dt)],'-dpdf','-r0')
+cd ..
+
 
 %% Tests per positive
 

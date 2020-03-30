@@ -26,8 +26,7 @@ R=cumsum(Recovered)+cumsum(Deaths);  % Number of total removals, cumulative sum 
 I=Nd-R;                              % Number of actively infected is total cases - removed
 S=nPop*(1+(lambda-mu)*Day)-I-R;      % Susceptible population left, adjusted for vital dynamics
 
-SIR_fitBegin      = min(find(I>=10));% Day to begin fit
-SIR_fitBegin = 1                    % Manual override because so far it has no meaning to do this
+SIR_fitBegin      = fitbegin;
 
 Ts = 1;                              % Sampling [1 day]
 data = iddata([S I R],[],Ts);        % Create identification data object
@@ -37,8 +36,9 @@ data.OutputUnit = [{'Cases'};{'Cases'};{'Cases'}];                          % Ou
 dataToFit=data(SIR_fitBegin:end);    % Create dataset itslef.
 
 %% Initial guess of model parameters
+
 beta=1/10; % 1/day infection rate
-gamma=1/20; % 1/day removal rate
+gamma=1/15.5; % 1/day removal rate
 
 
 %% Model structure
@@ -60,7 +60,7 @@ SIR_VDinit.Parameters(1).Maximum = 1/3;
 SIR_VDinit.Parameters(1).Fixed = false;
     
 % Removal rate gamma (1/gamma in days)
-SIR_VDinit.Parameters(2).Minimum = 1/30;
+SIR_VDinit.Parameters(2).Minimum = 1/40;
 SIR_VDinit.Parameters(2).Maximum = 1/10; % Mean deaths 17 days, mean recoveries
 SIR_VDinit.Parameters(2).Fixed = true; 
 
@@ -78,7 +78,7 @@ SIR_VDinit.Parameters(4).Fixed = false;
 
 % --------------Initial conditions--------------------
 % Susceptibles
-SIR_VDinit.InitialStates(1).Fixed = true;
+SIR_VDinit.InitialStates(1).Fixed = false;
 
 SIR_VDinit.InitialStates(2).Fixed = false;   % Let this parameter free, overall results will be better. True number unknown anyways
 SIR_VDinit.InitialStates(2).Minimum = 0;     % Cannot be negative
@@ -138,7 +138,7 @@ gFSIR=mean(growthFactorSIR);
 
 
 %% Report
-R0est=(SIR_VD.Parameters(1).Value*SIR_VD.Parameters(3).Value)/(SIR_VD.Parameters(4).Value*(SIR_VD.Parameters(4).Value+SIR_VD.Parameters(2).Value));
+R0est=(SIR_VD.Parameters(1).Value*SIR_VD.Parameters(3).Value)/(SIR_VD.Parameters(4).Value*(SIR_VD.Parameters(4).Value+(SIR_VD.Parameters(2).Value)));
 betaInvEst=1/SIR_VD.Parameters(1).Value;
 gammaInvEst=1/SIR_VD.Parameters(2).Value;
 N0Fitest=round(SIR_VD.InitialStates(2).Value);

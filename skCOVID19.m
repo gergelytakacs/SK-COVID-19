@@ -2,12 +2,26 @@
 % No guarantees given, whatsoever.
 % Yeah, I'm going for the messiest code ever. Sorry.
 
-% Ideas: Weighted forgetting, SIR Model fi, SEIR model
+% Ideas: Weighted forgetting, SEIR model implement in final.
 
 clc; clear; close all;
 
 importData;
 
+
+fitbegin=12; % The day we reached 100 people
+
+%% Colors
+blue   = [0      0.4470 0.7410];
+orange = [0.8500 0.3250 0.0980];
+yellow = [0.9290, 0.6940, 0.1250];
+
+
+% Recovered cases definition is:
+%"Po?et pacientov, ktorý sa vylie?ili. Vylie?ený pacient je taký, ktorému ustúpili príznaky ochorenia COVID-19, 2 týždne bol v karanténe a následne bol 2x negatívne testovaný."
+% See https://ezdravie.nczisk.sk/sk?category=COVID
+% This adds 14 days after recovery + cca. 2 x 2 days for testing.
+% Recoveries are about 20 days late.
 
 load dataSKpred;
 
@@ -16,10 +30,9 @@ load dataSKpred;
 % lambda=195/y
 % mu=258/y
 
-fitbegin=1;
 
 d1=datetime(2020,3,6,'Format','d.M'); % First confirmed case
-pDay=14;                  % Days to predict  
+pDay=21;                  % Days to predict  
 symptoms=5.1;              % Mean days before symptoms show
 
 %https://www.cia.gov/library/publications/the-world-factbook/geos/lo.html
@@ -61,9 +74,12 @@ DayPred=1:1:length(Day)+pDay;
 DayPredRest=DayPred(1:end-max(Day)+1);
 
 
+
+
 NdPredicted=round((gF.^DayPred)*N0);
 NdPredHigh=round((ci(2,1).^DayPredRest*NdPredicted(max(Day)-1)));
 NdPredLow=round((ci(1,1).^DayPredRest*NdPredicted(max(Day)-1)));
+
 
 
 %% Shift data to account for onset of symptoms
@@ -88,7 +104,8 @@ testB=fitresult.p2;
 
 
 %SIR_ID %% SIR estimation procedure
-SIR_VD_ID
+SEIR_VD_ID
+polyModel
 outFigures
 outReport
 
@@ -97,7 +114,7 @@ outReport
 
 %% Save data
 if (max(dataSKpred(:,1))<=max(Day))
-dataSKpred(end+1,:)=[(max(Day)+1),NdPredicted(max(Day)+1), NdPredLow(2), NdPredHigh(2), gF, ci(1,1), ci(2,1), 1+gFSIR/100];
+dataSKpred(end+1,:)=[(max(Day)+1),NdPredicted(max(Day)+1), NdPredLow(2), NdPredHigh(2), gF, ci(1,1), ci(2,1), 1+gFSIR/100,NdSIRnext, NdPredictedPoly(max(Day)),gFPoly];
 save dataSKpred dataSKpred
 end
 
