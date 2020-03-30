@@ -73,7 +73,7 @@ xticklabels(DatePred)
 xtickangle(90)
 xlabel('Date')
 ylabel('Growth factor [%]')
-legend('Growth factor (exponential fit)','Growth factor (exponential fit, conf.)','Growth factor (SIR)','Growth factor (polynomial fit)','Growth factor (data)','Location','northeast')
+legend('Growth factor (exponential fit)','Growth factor (exponential fit, conf.)','Growth factor (SEIR)','Growth factor (polynomial fit)','Growth factor (data)','Location','northeast')
 title(['SARS-CoV-2 Growth factor in Slovakia, ',datestr(dt)])
 axis([12,length(Day)+1,0,50])
 text(2.5,0.9,'covid19.gergelytakacs.com','FontSize',10,'rotation',90,'Color',[0.7 0.7 0.7])
@@ -128,7 +128,7 @@ cd ..
 % xtickangle(90)
 % xlabel('Date')
 % ylabel('Cases (difference)')
-% legend('1 sigma (Exponential)','2 sigma (Exponential)','1 sigma (SIR)','2 sigma (SIR)','Case residuals (Exponential)','Case residuals (SIR)','Location','northwest')
+% legend('1 sigma (Exponential)','2 sigma (Exponential)','1 sigma (SEIR)','2 sigma (SEIR)','Case residuals (Exponential)','Case residuals (SEIR)','Location','northwest')
 % title(['SARS-CoV-2 Case prediction residuals for Slovakia, ',datestr(dt)])
 % %axis([1,max(Day)+1,0,max(totTest)])
 % text(0.5,-40,'covid19.gergelytakacs.com','FontSize',10,'rotation',90,'Color',[0.7 0.7 0.7])
@@ -137,7 +137,7 @@ cd ..
 % print(['skCOVID19_Residuals_',datestr(dt)],'-dpdf','-r0')
 % cd ..
 
-%% SIR Output (Infected)
+%% SEIR Output (Infected)
 
 h =  findobj('type','figure');
 n = length(h);
@@ -157,8 +157,8 @@ xticklabels(DatePred)
 xtickangle(90)
 xlabel('Date')
 ylabel('Cases')
-legend('Infections (data)','New infections (data)','Predicted infections (SIR model)','SIR model fit','Total Infected (SIR model, 5d shift)','Predictions','Location','northwest')
-title(['SARS-CoV-2 Infections in Slovakia: SIR model w/ vital dynamics, ',datestr(dt)])
+legend('Infections (data)','New infections (data)','Predicted infections (SEIR model)','SEIR model fit','Total Infected (SEIR model, 5d shift)','Predictions','Location','northwest')
+title(['SARS-CoV-2 Infections in Slovakia: SEIR model w/ vital dynamics, ',datestr(dt)])
 axis([0,length(Day)+7,0,NdSymptoms(length(Day)+7)])
 text(0.5,0.9,'covid19.gergelytakacs.com','FontSize',10,'rotation',90,'Color',[0.7 0.7 0.7])
 fig = gcf;
@@ -166,13 +166,13 @@ fig.PaperUnits = 'centimeters';
 fig.PaperPosition = [0 0 20 10];
 
 cd out
-print(['skCOVID19_SIR_Cases_',datestr(dt)],'-dpng','-r0')
-%print(['skCOVID19_SIR_Cases_',datestr(dt)],'-dpdf','-r0')
+print(['skCOVID19_SEIR_Cases_',datestr(dt)],'-dpng','-r0')
+%print(['skCOVID19_SEIR_Cases_',datestr(dt)],'-dpdf','-r0')
 
 axis([0,length(Day)+1,0,dataSKpred(end,4)])
 
-print(['skCOVID19_SIR_Cases_Detail',datestr(dt)],'-dpng','-r0')
-%print(['skCOVID19_SIR_Cases_Detail',datestr(dt)],'-dpdf','-r0')
+print(['skCOVID19_SEIR_Cases_Detail',datestr(dt)],'-dpng','-r0')
+%print(['skCOVID19_SEIR_Cases_Detail',datestr(dt)],'-dpdf','-r0')
 cd ..
 
 
@@ -209,7 +209,7 @@ xtickangle(90)
 xlabel('Date')
 ylabel('Cases')
 %legend('95% Confidence (Confirmed prediction)','95% Confidence (Total, 5 d shift)','Cumulative confirmed','New confirmed',['Poly. Approximation (Confirmed) R^2=',num2str(R2)],['Exp. Approximation (Total), 5 d shift'],'Location','northwest')
-legend('Cumulative confirmed','Polynomial fit','Exponential fit','SIR Model','Location','southeast')
+legend('Cumulative confirmed','Polynomial fit','Exponential fit','SEIR Model','Location','southeast')
 title(['SARS-CoV-2 Cases in Slovakia: Logarithmic view and comparison, ',datestr(dt)])
 axis([0,length(Day)+1,0,NdPredictedPoly(max(Day)+1)])
 text(0.5,0.9,'covid19.gergelytakacs.com','FontSize',10,'rotation',90,'Color',[0.7 0.7 0.7])

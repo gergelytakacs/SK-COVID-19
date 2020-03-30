@@ -114,7 +114,7 @@ outReport
 
 %% Save data
 if (max(dataSKpred(:,1))<=max(Day))
-dataSKpred(end+1,:)=[(max(Day)+1),NdPredicted(max(Day)+1), NdPredLow(2), NdPredHigh(2), gF, ci(1,1), ci(2,1), 1+gFSIR/100,NdSIRnext, NdPredictedPoly(max(Day)),gFPoly];
+dataSKpred(end+1,:)=[(max(Day)+1),NdPredicted(max(Day)+1), NdPredLow(2), NdPredHigh(2), gF, ci(1,1), ci(2,1), 1+gFSIR/100,NdSIRnext, NdPredictedPoly(max(Day)+1),gFPoly];
 save dataSKpred dataSKpred
 end
 

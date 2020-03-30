@@ -7,16 +7,16 @@ run=150
 
 %% Simulate for generic data
 
-SIR_VD.Parameters(3).Value=lambda;
-
-SIR_VD.Parameters(4).Maximum =inf;
-SIR_VD.Parameters(4).Minimum = -inf;
-
-SIR_VD.Parameters(4).Value=mu;
+SEIR_VD.Parameters(3).Value=lambda;
+% 
+% SIR_VD.Parameters(4).Maximum =inf;
+% SIR_VD.Parameters(4).Minimum = -inf;
+% 
+SEIR_VD.Parameters(4).Value=mu;
 
 udata = iddata([],zeros(run,0),1);
-opt = simOptions('InitialCondition',[N-1;1;0]);
-simdatads=sim(SIR_VD,udata,opt);
+opt = simOptions('InitialCondition',[N-1;1;0;0]);
+simdatads=sim(SEIR_VD,udata,opt);
 IsimDS=simdatads.OutputData(:,2);
 RsimDS=simdatads.OutputData(:,3);
 SsimDS=simdatads.OutputData(:,1);
