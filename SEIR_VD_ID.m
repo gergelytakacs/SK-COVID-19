@@ -24,7 +24,8 @@ mu     = demDeathDay/nPop; % This is adjusted for the population
 
 R=cumsum(Recovered)+cumsum(Deaths);  % Number of total removals, cumulative sum of new recoveries and deaths
 I=Nd-R;                              % Number of actively infected is total cases - removed
-S=nPop*(1+(lambda-mu)*Day)-I-R;      % Susceptible population left, adjusted for vital dynamics
+%S=nPop*(1+(lambda-mu)*Day)-I-R;      % Susceptible population left, adjusted for vital dynamics
+S=nPop-I-R;
 
 SIR_fitBegin      = fitbegin;               % Manual override because so far it has no meaning to do this
 
@@ -39,10 +40,11 @@ dataToFit=data(SIR_fitBegin:end);    % Create dataset itslef.
 %% Initial guess of model parameters
 % Incubation period 2-14 days, 5.2 mean https://www.worldometers.info/coronavirus/coronavirus-incubation-period/
 % is S-E-I the incubation period?
-beta  =1/ 1;       % [1/day] exposure/contact rate
-sigma =1/ 5;       % [1/day] infection rate (latent period)
+beta  =1/ 6;       % [1/day] exposure/contact rate
+sigma =1/ 0.2;       % [1/day] infection rate (latent period)
 gamma =1/ 15.5;    % [1/day] removal rate   (infectious period)
 E0=3;            % [cases] Number of exposed at initial state
+
 
 %% Model structure
 
@@ -61,13 +63,13 @@ SEIR_VDinit = setinit(SEIR_VDinit,'Name',{'Susceptible' 'Exposed' 'Infected' 'Re
 % --------------Parameters--------------------
 
 % S->E Exposure (contact) rate beta (1/beta in days)
-%SEIR_VDinit.Parameters(1).Minimum = 1/31;      % [1/days] Cannot be reasonably more than 20 days      
-%SEIR_VDinit.Parameters(1).Maximum = 1/(1/24);  % [1/days] Cannot be reasonably less than an hour days      
+SEIR_VDinit.Parameters(1).Minimum = 1/30;      % [1/days] Cannot be reasonably more than 20 days      
+SEIR_VDinit.Parameters(1).Maximum = 1/1;  % [1/days] Cannot be reasonably less than an hour days      
 SEIR_VDinit.Parameters(1).Fixed = false;
 
 % E->I Infection rate sigma (1/sigma in days)
-%SEIR_VDinit.Parameters(1).Minimum = 1/31;      % [1/days] Cannot be reasonably more than 20 days      
-%SEIR_VDinit.Parameters(1).Maximum = 1/(1/24);  % [1/days] Cannot be reasonably less than an hour days      
+SEIR_VDinit.Parameters(2).Minimum = 1/5;      % [1/days] Cannot be reasonably more than 20 days      
+SEIR_VDinit.Parameters(2).Maximum = 1/(1/24);  % [1/days] Cannot be reasonably less than an hour days      
 SEIR_VDinit.Parameters(2).Fixed = false;
     
 % I->R Removal rate gamma (1/gamma in days)
@@ -77,15 +79,18 @@ SEIR_VDinit.Parameters(3).Fixed = false;
 
 % Birth rate lambda (1/lambda)           % Birth rate will not be changed
                                          % by the epidemic. (Yet. :)
+
+SEIR_VDinit.Parameters(4).Value = 0;                                          
 %SEIR_VDinit.Parameters(4).Minimum = lambda-0.25*lambda; % -25%
 %SEIR_VDinit.Parameters(4).Maximum = lambda+0.25*lambda; % +25%
-SEIR_VDinit.Parameters(4).Fixed = false; 
+SEIR_VDinit.Parameters(4).Fixed = true; 
 
 
 % Death rate mu (1/mu)                   % Consider changing this, maybe
+SEIR_VDinit.Parameters(5).Value = 0;  
 %SEIR_VDinit.Parameters(5).Minimum = mu-0.25*mu;   % after first death begin. Since the pandemic deaths are not counted for
 %SEIR_VDinit.Parameters(5).Maximum = mu+0.25*mu;   % the normal death rate. Or as a slack variable?
-SEIR_VDinit.Parameters(5).Fixed = false;
+SEIR_VDinit.Parameters(5).Fixed = true;
 
 % --------------Initial conditions--------------------
 % Susceptibles
@@ -95,7 +100,7 @@ SEIR_VDinit.InitialStates(2).Fixed = false;   % Let this parameter free, overall
 SEIR_VDinit.InitialStates(2).Minimum = 0;     % Cannot be negative
 SEIR_VDinit.InitialStates(2).Maximum = 1000;   % Unlikely to be more
 
-SEIR_VDinit.InitialStates(3).Fixed = true;   % Yet again, we can let this parameter free.
+SEIR_VDinit.InitialStates(3).Fixed = false;   % Yet again, we can let this parameter free.
 
 
 SEIR_VDinit.InitialStates(4).Fixed = false;   % Yet again, we can let this parameter free.
@@ -110,7 +115,7 @@ SEIR_VDinit.InitialStates(4).Fixed = false;   % Yet again, we can let this param
 % return
 
 % Identify model
-opt = nlgreyestOptions('Display','off','EstCovar',true,'SearchMethod','Auto'); %gna
+opt = nlgreyestOptions('Display','on','EstCovar',true,'SearchMethod','Auto'); %gna
 opt.SearchOption.MaxIter = 50;                % Maximal number of iterations
 SEIR_VD = nlgreyest(dataToFit,SEIR_VDinit,opt);              % Run identification procedure
 
@@ -139,12 +144,6 @@ IsimPred=round(SIRsimPred.OutputData(:,2));
 %NextDay
 NdSIRnext=IsimPred(2); %+R if we 
 
-%% Simulate for long time predictions
-udataLT = iddata([],zeros(100,0),1);
-optLT = simOptions('InitialCondition',[SEIR_VD.InitialStates(1).Value;SEIR_VD.InitialStates(2).Value;SEIR_VD.InitialStates(3).Value;SEIR_VD.InitialStates(4).Value]);
-[SIRsimLT Y_LT X_LT] = sim(SEIR_VD,udataLT,optLT);
-
-
 %% Growth factor
 growthFactorSIR= ([IsimFit; 0]./[0; IsimFit]);
 growthFactorSIR= (growthFactorSIR(2:end-1)-1)*100;
@@ -153,6 +152,9 @@ gFSIR=mean(growthFactorSIR);
 
 %% Report
 %R0est=(SEIR_VD.Parameters(1).Value*SEIR_VD.Parameters(3).Value)/(SEIR_VD.Parameters(4).Value*(SEIR_VD.Parameters(4).Value+SEIR_VD.Parameters(2).Value));
+
+
+
 betaEst=SEIR_VD.Parameters(1).Value;
 sigmaEst=SEIR_VD.Parameters(2).Value;
 gammaEst=SEIR_VD.Parameters(3).Value;
@@ -162,6 +164,35 @@ N0Fitest=round(SEIR_VD.InitialStates(2).Value);
 %model.Report.Fit
 MSE=round(SEIR_VD.Report.Fit.MSE);
 fitPerc=SEIR_VD.Report.Fit.FitPercent(2);
+
+% Diagnostic
+
+disp(['beta:  ',num2str(betaEst)])
+disp(['sigma: ',num2str(sigmaEst)])
+disp(['gamma: ',num2str(gammaEst)])
+
+%% Simulate for long time predictions
+SEIR_VD_LT=SEIR_VD;
+udataLT = iddata([],zeros(365,0),1);
+
+% SEIR_VD_LT.Parameters(1).Value=1/(7.9686);
+% SEIR_VD_LT.Parameters(2).Value=1/(0.0510);
+% SEIR_VD_LT.Parameters(3).Value=1/15.5;
+
+SEIR_VD_LT.Parameters(1).Value=1/(15);
+SEIR_VD_LT.Parameters(2).Value=1/(0.05);
+ SEIR_VD_LT.Parameters(3).Value=1/10;
+
+
+SEIR_VD_LT.Parameters(4).Value=lambda;
+SEIR_VD_LT.Parameters(5).Value=mu;
+
+optLT = simOptions('InitialCondition',[SEIR_VD_LT.InitialStates(1).Value;SEIR_VD_LT.InitialStates(2).Value;SEIR_VD_LT.InitialStates(3).Value;SEIR_VD_LT.InitialStates(4).Value]);
+%[SIRsimLT Y_LT X_LT] = sim(SEIR_VD_LT,udataLT,optLT);
+
+sim(SEIR_VD_LT,udataLT,optLT);
+
+%plot(Y_LT)
 
 
 %% simulate to find zero cases (day)
