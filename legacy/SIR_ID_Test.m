@@ -4,11 +4,10 @@
 % No guarantees given whatsoever.
 % See covid19.gergelytakacs.com for more
 
-I=Nd-Recovered;
-R=Recovered;
+R=cumsum(Recovered)+cumsum(Deaths);
 
 Ts = 1;                                         % Sampling [1 day]
-data = iddata([(nPop-I) I R],[],Ts);                          % Create identification data object
+data = iddata([(nPop-I-R) (I-R) R],[],Ts);                          % Create identification data object
 data.TimeUnit='days';
 
 
@@ -18,41 +17,45 @@ data.OutputUnit = [{'Cases'};{'Cases'};{'Cases'}];                          % Ou
 
 
 %% Initial guess of model parameters
-R0 = 3;             % [cases] Average base infection factor
-dR=10;              % [days]  Removal rate
+beta  = 1/7;             % [cases] Average base infection factor
+gamma = 1/8;              % [days]  Removal rate
+gammaTau=8;
 
 %% Model structure
-FileName      = 'SIR_ODE';              % File describing the SIR model structure
+FileName      = 'SIR_ODE_Test';              % File describing the SIR model structure
 Order         = [3 0 3];                % Model orders [ny nu nx]
-Parameters    = [R0,dR];                % Initial values of parameters
-InitialStates = [nPop-I(1);I(1);R(1)];           % Initial values of  [S I R] states
+Parameters    = [beta,gamma,gammaTau];                % Initial values of parameters
+InitialStates = [nPop-I(1)-R(1);I(1)-R(1);R(1)];           % Initial values of  [S I R] states
 Ts            = 0;                      % Time-continuous system
 
 % Set identification options
 SIRinit = idnlgrey(FileName,Order,Parameters,InitialStates,Ts,'TimeUnit','days','Name','SIR Model');
-SIRinit = setpar(SIRinit,'Name',{'R0','dR (Removal rate)'});
+SIRinit = setpar(SIRinit,'Name',{'beta','gamma','gammaTau'});
 SIRinit = setinit(SIRinit,'Name',{'Susceptible' 'Infected' 'Removed'});
 
-% Base reproduction number R0
-SIRinit.Parameters(1).Minimum = 1.0;
-SIRinit.Parameters(1).Maximum = 15;
+% beta
+SIRinit.Parameters(1).Minimum = 1/30;
+SIRinit.Parameters(1).Maximum = 1/1;
 SIRinit.Parameters(1).Fixed = false;
     
-% Removal rate dR (1/gamma)
-SIRinit.Parameters(2).Minimum = 0.0;
-SIRinit.Parameters(2).Maximum = 14.0; % Mean deaths 17 days, mean recoveries
+% gamma
+SIRinit.Parameters(2).Minimum = 1/1000
+SIRinit.Parameters(2).Maximum = 1000; % Mean deaths 17 days, mean recoveries
 SIRinit.Parameters(2).Fixed = false; 
 
-% Susceptibles
-SIRinit.InitialStates(1).Fixed = true;
+SIRinit.Parameters(3).Minimum = 1
+SIRinit.Parameters(3).Maximum = 1000; % Mean deaths 17 days, mean recoveries
+SIRinit.Parameters(3).Fixed = false; 
 
+% Susceptibles
+SIRinit.InitialStates(1).Fixed = false;
 
 SIRinit.InitialStates(2).Fixed = false;   % Let this parameter free, overall results will be better. True number unknown anyways
-SIRinit.InitialStates(2).Minimum = 0;     % Cannot be negative
+%SIRinit.InitialStates(2).Minimum = 0;     % Cannot be negative
 SIRinit.InitialStates(2).Maximum = 100;   % Unlikely to be more
 
 SIRinit.InitialStates(3).Fixed = false;   % Yet again, we can let this parameter free.
-SIRinit.InitialStates(2).Minimum = 0;
+SIRinit.InitialStates(2).Minimum = -inf;
 SIRinit.InitialStates(2).Maximum = 10;
 
 % Identify model
@@ -70,10 +73,21 @@ udata = iddata([],zeros(365,0),1);
 opt = simOptions('InitialCondition',[]);
 SIRsim = sim(SIR,udata,opt);
 Isim=round(SIRsim.OutputData(:,2));
-
+figure(1)
+%SIR.Parameters(1).Value=1/3;
+%SIR.Parameters(2).Value=1/10;
 sim(SIR,udata,opt)
 
+
+
+figure(2)
 compare(SIR,data)
+disp(['1/beta: ',num2str(1/SIR.Parameters(1).Value),' [days]'])
+disp(['1/gamma: ',num2str(1/SIR.Parameters(2).Value),' [days]'])
+disp(['gammaTau: ',num2str(SIR.Parameters(3).Value),' [days]'])
+disp(['gammaTau: ',num2str(SIR.Parameters(1).Value/SIR.Parameters(2).Value),' [cases]'])
+
+
 return
 
 %% Growth factor

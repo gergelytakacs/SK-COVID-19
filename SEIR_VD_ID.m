@@ -171,28 +171,7 @@ disp(['beta:  ',num2str(betaEst)])
 disp(['sigma: ',num2str(sigmaEst)])
 disp(['gamma: ',num2str(gammaEst)])
 
-%% Simulate for long time predictions
-SEIR_VD_LT=SEIR_VD;
-udataLT = iddata([],zeros(365,0),1);
 
-% SEIR_VD_LT.Parameters(1).Value=1/(7.9686);
-% SEIR_VD_LT.Parameters(2).Value=1/(0.0510);
-% SEIR_VD_LT.Parameters(3).Value=1/15.5;
-
-SEIR_VD_LT.Parameters(1).Value=1/(15);
-SEIR_VD_LT.Parameters(2).Value=1/(0.05);
- SEIR_VD_LT.Parameters(3).Value=1/10;
-
-
-SEIR_VD_LT.Parameters(4).Value=lambda;
-SEIR_VD_LT.Parameters(5).Value=mu;
-
-optLT = simOptions('InitialCondition',[SEIR_VD_LT.InitialStates(1).Value;SEIR_VD_LT.InitialStates(2).Value;SEIR_VD_LT.InitialStates(3).Value;SEIR_VD_LT.InitialStates(4).Value]);
-%[SIRsimLT Y_LT X_LT] = sim(SEIR_VD_LT,udataLT,optLT);
-
-sim(SEIR_VD_LT,udataLT,optLT);
-
-%plot(Y_LT)
 
 
 %% simulate to find zero cases (day)
