@@ -47,7 +47,7 @@ disp(['Nové overené prípady: ',num2str(NdPredictedPoly(max(Day)+1)-Nd(end))]) %,
 disp(['Celkový predpokladaný pocet nakazených: ',num2str(NdSymptomsPoly(max(Day)+1))])
 
 disp(['Predpokladaný dátum 1000+ overených prípadov: ',datestr(d1+min(find(NdPredictedPoly>1000)))])
-disp(['Predpokladaný dátum prvého nakazenia: ',datestr(d1+firstCasePoly)])
+%disp(['Predpokladaný dátum prvého nakazenia: ',datestr(d1+firstCasePoly)])
 %disp(['Predpokladaný skutocný pocet infikovaných nultý den: ',num2str(round(N0)),' (',num2str(round(ci(1,2))),'-',num2str(round(ci(2,2))),'), (6-Mar-2020)'])
 disp(['Faktor nárastu (priemer, posledný týžden): ',num2str(round( gFPoly*10)/10),'%'])
 disp(['Zdvojenie poctu prípadov za: ',num2str(round(70/gFPoly*10)/10),' dní'])

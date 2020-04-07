@@ -3,11 +3,20 @@
 % Gergely Takacs, March 2020
 % No guarantees given whatsoever.
 % See covid19.gergelytakacs.com for more
+importData
 
-R=cumsum(Recovered)+cumsum(Deaths);
+fitBegin=1;
+
+I=cumsum(Confirmed(fitBegin:end));      % Cumulative sum of daily cases, transpose to make it compatible w/ E. Cheynet's code
+R=cumsum(Recovered(fitBegin:end));      % Cumulative sum of daily cases, transpose to make it compatible w/ E. Cheynet's code
+D=cumsum(Deaths(fitBegin:end));         % Cumulative sum of daily cases, transpose to make it compatible w/ E. Cheynet's code
+
+R=R+D;
+I=I-R;                                 % Active infections
+S=nPop-I;
 
 Ts = 1;                                         % Sampling [1 day]
-data = iddata([(nPop-I-R) (I-R) R],[],Ts);                          % Create identification data object
+data = iddata([S I R],[],Ts);                          % Create identification data object
 data.TimeUnit='days';
 
 
@@ -17,15 +26,15 @@ data.OutputUnit = [{'Cases'};{'Cases'};{'Cases'}];                          % Ou
 
 
 %% Initial guess of model parameters
-beta  = 1/7;             % [cases] Average base infection factor
-gamma = 1/8;              % [days]  Removal rate
-gammaTau=8;
+beta  = 1/10;             % [cases] Average base infection factor
+gamma = 1/20;              % [days]  Removal rate
+gammaTau=50;
 
 %% Model structure
-FileName      = 'SIR_ODE_Test';              % File describing the SIR model structure
+FileName      = 'SIR_ODE_Test1';              % File describing the SIR model structure
 Order         = [3 0 3];                % Model orders [ny nu nx]
 Parameters    = [beta,gamma,gammaTau];                % Initial values of parameters
-InitialStates = [nPop-I(1)-R(1);I(1)-R(1);R(1)];           % Initial values of  [S I R] states
+InitialStates = [S(1);I(1);R(1)];           % Initial values of  [S I R] states
 Ts            = 0;                      % Time-continuous system
 
 % Set identification options
@@ -39,29 +48,38 @@ SIRinit.Parameters(1).Maximum = 1/1;
 SIRinit.Parameters(1).Fixed = false;
     
 % gamma
-SIRinit.Parameters(2).Minimum = 1/1000
-SIRinit.Parameters(2).Maximum = 1000; % Mean deaths 17 days, mean recoveries
+SIRinit.Parameters(2).Minimum = 0.001
+SIRinit.Parameters(2).Maximum = 1; % Mean deaths 17 days, mean recoveries
 SIRinit.Parameters(2).Fixed = false; 
 
-SIRinit.Parameters(3).Minimum = 1
-SIRinit.Parameters(3).Maximum = 1000; % Mean deaths 17 days, mean recoveries
+% gammaTau
+SIRinit.Parameters(3).Minimum = 10
+SIRinit.Parameters(3).Maximum = 200; % Mean deaths 17 days, mean recoveries
 SIRinit.Parameters(3).Fixed = false; 
 
 % Susceptibles
 SIRinit.InitialStates(1).Fixed = false;
 
 SIRinit.InitialStates(2).Fixed = false;   % Let this parameter free, overall results will be better. True number unknown anyways
-%SIRinit.InitialStates(2).Minimum = 0;     % Cannot be negative
-SIRinit.InitialStates(2).Maximum = 100;   % Unlikely to be more
+SIRinit.InitialStates(2).Minimum = -inf;     % Cannot be negative
+SIRinit.InitialStates(2).Maximum = inf;   % Unlikely to be more
 
 SIRinit.InitialStates(3).Fixed = false;   % Yet again, we can let this parameter free.
 SIRinit.InitialStates(2).Minimum = -inf;
-SIRinit.InitialStates(2).Maximum = 10;
+SIRinit.InitialStates(2).Maximum = inf;
 
 % Identify model
-opt = nlgreyestOptions('Display','on','EstCovar',true,'SearchMethod','Auto'); %gna
-opt.SearchOption.MaxIter = 50;                % Maximal number of iterations
+opt = nlgreyestOptions('Display','on','EstCovar',true); %gna
+%'auto' (default) | 'model' | 'zero' | 'estimate' | 'backcast'
+
+
+
+%opt.DisturbanceModel='auto';               %'auto' (default) | 'model' | 'fixed' | 'none' | 'estimate'
+opt.SearchMethod='auto';                      %'auto' (default) | 'gn' | 'gna' | 'lm' | 'grad' | 'lsqnonlin' | 'fmincon'
+opt.SearchOption.MaxIter = 1000;                % Maximal number of iterations
 SIR = nlgreyest(data,SIRinit,opt);              % Run identification procedure
+
+
     
 %% Just internal comparison, not to output
 %compare(data,SIR);                           % Compare data to model
@@ -84,8 +102,8 @@ figure(2)
 compare(SIR,data)
 disp(['1/beta: ',num2str(1/SIR.Parameters(1).Value),' [days]'])
 disp(['1/gamma: ',num2str(1/SIR.Parameters(2).Value),' [days]'])
-disp(['gammaTau: ',num2str(SIR.Parameters(3).Value),' [days]'])
-disp(['gammaTau: ',num2str(SIR.Parameters(1).Value/SIR.Parameters(2).Value),' [cases]'])
+disp(['1/gammaTau: ',num2str(1/SIR.Parameters(3).Value),' [days]'])
+disp(['R0: ',num2str((SIR.Parameters(1).Value)/(SIR.Parameters(2).Value)),' [cases]'])
 
 
 return
