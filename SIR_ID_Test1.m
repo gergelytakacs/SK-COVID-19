@@ -3,17 +3,23 @@
 % Gergely Takacs, March 2020
 % No guarantees given whatsoever.
 % See covid19.gergelytakacs.com for more
+%https://www.cia.gov/library/publications/the-world-factbook/geos/lo.html
+popSize=5.440602;            % Population size in millions
+nPop=popSize*1E6;        % Population size
+
 importData
 
-fitBegin=1;
+fitBegin=12;
 
-I=cumsum(Confirmed(fitBegin:end));      % Cumulative sum of daily cases, transpose to make it compatible w/ E. Cheynet's code
-R=cumsum(Recovered(fitBegin:end));      % Cumulative sum of daily cases, transpose to make it compatible w/ E. Cheynet's code
-D=cumsum(Deaths(fitBegin:end));         % Cumulative sum of daily cases, transpose to make it compatible w/ E. Cheynet's code
-
+I=cumsum(Confirmed);      % Cumulative sum of daily cases, transpose to make it compatible w/ E. Cheynet's code
+R=cumsum(Recovered);      % Cumulative sum of daily cases, transpose to make it compatible w/ E. Cheynet's code
+D=cumsum(Deaths);         % Cumulative sum of daily cases, transpose to make it compatible w/ E. Cheynet's code
 R=R+D;
 I=I-R;                                 % Active infections
 S=nPop-I;
+S=S(fitBegin:end)
+I=I(fitBegin:end)
+R=R(fitBegin:end)
 
 Ts = 1;                                         % Sampling [1 day]
 data = iddata([S I R],[],Ts);                          % Create identification data object

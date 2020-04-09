@@ -3,17 +3,23 @@
 % Gergely Takacs, March 2020
 % No guarantees given whatsoever.
 % See covid19.gergelytakacs.com for more
+%https://www.cia.gov/library/publications/the-world-factbook/geos/lo.html
+popSize=5.440602;            % Population size in millions
+nPop=popSize*1E6;        % Population size
+
 importData
 
-fitBegin=1;
+fitBegin=12;
 
-I=cumsum(Confirmed(fitBegin:end));      % Cumulative sum of daily cases, transpose to make it compatible w/ E. Cheynet's code
-R=cumsum(Recovered(fitBegin:end));      % Cumulative sum of daily cases, transpose to make it compatible w/ E. Cheynet's code
-D=cumsum(Deaths(fitBegin:end));         % Cumulative sum of daily cases, transpose to make it compatible w/ E. Cheynet's code
-
-R=R+D;                                  % Removed cases
-I=I-R;                                  % Active infections
-S=nPop-I;                               % Remaining susceptibles
+I=cumsum(Confirmed);      % Cumulative sum of daily cases, transpose to make it compatible w/ E. Cheynet's code
+R=cumsum(Recovered);      % Cumulative sum of daily cases, transpose to make it compatible w/ E. Cheynet's code
+D=cumsum(Deaths);         % Cumulative sum of daily cases, transpose to make it compatible w/ E. Cheynet's code
+R=R+D;
+I=I-R;                                 % Active infections
+S=nPop-I;
+S=S(fitBegin:end);
+I=I(fitBegin:end);
+R=R(fitBegin:end);
 
 Ts = 1;                                 % Sampling [1 day]
 data = iddata([S I R],[],Ts);           % Create identification data object
@@ -28,7 +34,7 @@ data.OutputUnit = [{'Cases'};{'Cases'};{'Cases'}];                          % Ou
 %% Initial guess of model parameters
 beta  = 1/10;             % [cases] Average base infection factor
 gamma = 1/20;              % [days]  Removal rate
-gammaTau=100;
+gammaTau=20;
 
 %% Model structure
 FileName      = 'SIR_ODE_Test1';              % File describing the SIR model structure
@@ -54,7 +60,7 @@ SIRinit.Parameters(2).Fixed = false;
 
 % gammaTau
 SIRinit.Parameters(3).Minimum = 1/100
-SIRinit.Parameters(3).Maximum = 300; % Mean deaths 17 days, mean recoveries
+SIRinit.Parameters(3).Maximum = 200; % Mean deaths 17 days, mean recoveries
 SIRinit.Parameters(3).Fixed = false; 
 
 % Susceptibles
@@ -65,7 +71,7 @@ SIRinit.InitialStates(2).Minimum = -1000;     % Cannot be negative
 SIRinit.InitialStates(2).Maximum = 1000;   % Unlikely to be more
 
 SIRinit.InitialStates(3).Fixed = false;   % Yet again, we can let this parameter free.
-SIRinit.InitialStates(3).Minimum = -1000;
+SIRinit.InitialStates(3).Minimum = -1;
 SIRinit.InitialStates(3).Maximum = 10000;
 
 % Identify model
@@ -89,10 +95,10 @@ udata = iddata([],zeros(365,0),1);
 opt = simOptions('InitialCondition',[]);
 SIRsim = sim(SIR,udata,opt);
 Isim=round(SIRsim.OutputData(:,2));
-%figure(1)
+figure(1)
 %SIR.Parameters(1).Value=1/3;
 %SIR.Parameters(2).Value=1/10;
-%sim(SIR,udata,opt)
+sim(SIR,udata,opt)
 
 
 
