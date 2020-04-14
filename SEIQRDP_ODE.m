@@ -25,13 +25,13 @@
 
 
 
-function [dx y] = SEIQRDP_ODE(t, x, u, alpha,beta,sigma,delta,gamma0,gamma1,mu0, mu1, varargin)
+function [dx y] = SEIQRDP_ODE(t, x, u, alpha,beta,sigma,delta,gamma0,gamma1,mu, varargin)
 
 
 N = x(1)+x(2)+x(3)+x(4)+x(5)+x(6)+x(7);                                                             % Computing total population
 
 gamma=gamma0*(1-exp(-gamma1*t));
-mu=mu0*(exp(-t*mu1));
+
 
 dx(1) =   -alpha*x(1) -beta*x(1)*x(3)/N;                                                            % (S(t)) Differential equation for Susceptible cases. People are either exposed to the virus or protected by social distancing measures, gov't. action, PPE, etc.
 dx(2) =               +beta*x(1)*x(3)/N  -sigma*x(2);                                               % (E(t)) Differential equation for Exposed cases. People get exposed to the disease. This group then transfers to the actively infectious group.

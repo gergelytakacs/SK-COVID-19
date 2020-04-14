@@ -8,7 +8,7 @@ I=Nd-Recovered;
 R=Recovered;
 
 Ts = 1;                                         % Sampling [1 day]
-data = iddata([(nPop-I) I R],[],Ts);                          % Create identification data object
+data = iddata([I R],[],Ts);                          % Create identification data object
 data.TimeUnit='days';
 
 
@@ -56,7 +56,8 @@ SIRinit.InitialStates(2).Minimum = 0;
 SIRinit.InitialStates(2).Maximum = 10;
 
 % Identify model
-opt = nlgreyestOptions('Display','on','EstCovar',true,'SearchMethod','Auto'); %gna
+opt = nlgreyestOptions('Display','on','EstCovar',true); %gna
+opt.SearchMethod='gna';
 opt.SearchOption.MaxIter = 50;                % Maximal number of iterations
 SIR = nlgreyest(data,SIRinit,opt);              % Run identification procedure
     

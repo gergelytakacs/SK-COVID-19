@@ -41,7 +41,7 @@ dataToFit=data(SIR_fitBegin:end);    % Create dataset itslef.
 % Incubation period 2-14 days, 5.2 mean https://www.worldometers.info/coronavirus/coronavirus-incubation-period/
 % is S-E-I the incubation period?
 beta  =1/ 6;       % [1/day] exposure/contact rate
-sigma =1/ 0.2;       % [1/day] infection rate (latent period)
+sigma =1/ 0.5;       % [1/day] infection rate (latent period)
 gamma =1/ 15.5;    % [1/day] removal rate   (infectious period)
 E0=3;            % [cases] Number of exposed at initial state
 
@@ -68,7 +68,7 @@ SEIR_VDinit.Parameters(1).Maximum = 1/1;  % [1/days] Cannot be reasonably less t
 SEIR_VDinit.Parameters(1).Fixed = false;
 
 % E->I Infection rate sigma (1/sigma in days)
-SEIR_VDinit.Parameters(2).Minimum = 1/5;      % [1/days] Cannot be reasonably more than 20 days      
+SEIR_VDinit.Parameters(2).Minimum = 1/7;      % [1/days] Cannot be reasonably more than 20 days      
 SEIR_VDinit.Parameters(2).Maximum = 1/(1/24);  % [1/days] Cannot be reasonably less than an hour days      
 SEIR_VDinit.Parameters(2).Fixed = false;
     
@@ -100,10 +100,10 @@ SEIR_VDinit.InitialStates(2).Fixed = false;   % Let this parameter free, overall
 SEIR_VDinit.InitialStates(2).Minimum = 0;     % Cannot be negative
 SEIR_VDinit.InitialStates(2).Maximum = 1000;   % Unlikely to be more
 
-SEIR_VDinit.InitialStates(3).Fixed = false;   % Yet again, we can let this parameter free.
+SEIR_VDinit.InitialStates(3).Fixed = true;   % Yet again, we can let this parameter free.
 
 
-SEIR_VDinit.InitialStates(4).Fixed = false;   % Yet again, we can let this parameter free.
+SEIR_VDinit.InitialStates(4).Fixed = true;   % Yet again, we can let this parameter free.
 
 
 %% Simulate initial guess
@@ -115,14 +115,17 @@ SEIR_VDinit.InitialStates(4).Fixed = false;   % Yet again, we can let this param
 % return
 
 % Identify model
-opt = nlgreyestOptions('Display','on','EstCovar',true,'SearchMethod','Auto'); %gna
+opt = nlgreyestOptions('Display','on','EstCovar',true); %gna
+opt.SearchMethod='lsqnonlin'
+
+
 opt.SearchOption.MaxIter = 50;                % Maximal number of iterations
 SEIR_VD = nlgreyest(dataToFit,SEIR_VDinit,opt);              % Run identification procedure
 
 
 %% Just internal comparison, not to output
 disp(['SEIR model fit for I (x(3)) is: ',num2str(round(SEIR_VD.Report.Fit.FitPercent(2)*10)/10),'%'])
-%compare(dataToFit,SEIR_VD);                           % Compare data to model
+compare(dataToFit,SEIR_VD);                           % Compare data to model
 %hold off
 %grid on
 
@@ -133,6 +136,11 @@ udataFit = iddata([],zeros(max(Day)-SIR_fitBegin+1,0),1);
 optFit = simOptions('InitialCondition',[SEIR_VD.InitialStates(1).Value;SEIR_VD.InitialStates(2).Value;SEIR_VD.InitialStates(3).Value;SEIR_VD.InitialStates(4).Value]);
 [SIRsimFit Y_Fit X_Fit] = sim(SEIR_VD,udataFit,optFit);
 IsimFit=round(SIRsimFit.OutputData(:,2));
+
+%% Simulate for long time predictions
+udataFit = iddata([],zeros(200,0),1);
+optFit = simOptions('InitialCondition',[SEIR_VD.InitialStates(1).Value;SEIR_VD.InitialStates(2).Value;SEIR_VD.InitialStates(3).Value;SEIR_VD.InitialStates(4).Value]);
+sim(SEIR_VD,udataFit,optFit);
 
 
 %% Simulate for short time predictions

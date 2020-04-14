@@ -7,10 +7,10 @@
 
 function [dx y] = SIR_ODE(t, x, u, beta , gamma, gammaTau, varargin)
 
-%gammaT=gamma*(1-exp(-t/gammaTau));
-gammaT=gamma;
+gammaT=gamma*(1-exp(-t*gammaTau));
+
 N = x(1) + x(2) + x(3);                  % Computing total population from original datay=[x(1); x(2); x(3)];                     % All is measured
-y=[x(1) x(2) x(3)];
+y=[x(2) x(3)];
 
 dx(1) = - beta*x(2)*x(1)/N;              % (S) Differential equation for Susceptible cases
 dx(2) =   beta*x(2)*x(1)/N - gammaT*x(2); % (I) Differential equation for Infected cases

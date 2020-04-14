@@ -11,7 +11,7 @@ yellow = [0.9290, 0.6940, 0.1250];
 % Data reading and preparation
 importData;                              % Script to import the data from CSV
 
-fitBegin=15;                              % Day to begin the fit
+fitBegin=20;                              % Day to begin the fit
 
 I=cumsum(Confirmed)';      % Cumulative sum of daily cases, transpose to make it compatible w/ E. Cheynet's code
 R=cumsum(Recovered)';      % Cumulative sum of daily cases, transpose to make it compatible w/ E. Cheynet's code
