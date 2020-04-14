@@ -13,7 +13,7 @@ disp(['(Parametre nekonvergujú správne pre chýbajúce dáta na vyliecené pripady a
 disp(['----------------------------'])
 disp(['Overené prípady: ',num2str(round(NdSIRnext)),' (do konca dna)'])
 disp(['Nové overené prípady: ',num2str(NdSIRnext-Nd(end)),' (do konca dna)'])
-disp(['Celkový predpokladaný pocet nakazených: ',num2str(IsimSymptoms(max(Day)+round(symptoms)))])
+disp(['Celkový predpokladaný pocet nakazených: ',num2str(IsimPred(round(symptoms)+2))])
 disp(['Predpokladaný dátum 1000+ overených prípadov: ',datestr(d1+max(Day)+min(find(IsimPred>1000)))])
 if (d0est<31)
 disp(['Predpokladaný dátum prvého nakazenia: ',datestr(d1-d0est)])
@@ -35,7 +35,7 @@ disp(['Nové overené prípady: ',num2str(NdPredicted(max(Day)+1)-Nd(end)),' (',num
 disp(['Celkový predpokladaný pocet nakazených: ',num2str(NdSymptoms(max(Day)+1)),' (',num2str(NdSymptomsLow(max(Day)+1)),'-',num2str(NdSymptomsHigh(max(Day)+1)),')'])
 %disp(['Predpokladaný dátum 100+ overených prípadov: ',datestr(d1+min(find(NdPredicted>100)))])
 disp(['Predpokladaný dátum 1000+ overených prípadov: ',datestr(d1+min(find(NdPredicted>1000)))])
-if (firstCase<31)
+if (firstCase>31)
 disp(['Predpokladaný dátum prvého nakazenia: ',datestr(d1+firstCase)])
 end
 disp(['Predpokladaný skutocný pocet infikovaných nultý den: ',num2str(round(N0)),' (',num2str(round(ci(1,2))),'-',num2str(round(ci(2,2))),'), (6-Mar-2020)'])

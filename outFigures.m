@@ -149,7 +149,7 @@ grid on
 bar(Day,Confirmed) % Confirmed new cases
 plot(DayPred(max(Day):end-1),IsimPred,'--','Color',blue,'LineWidth',1.5)      % Prediction only
 plot(Day(SIR_fitBegin:end),IsimFit,'LineWidth',1.5,'Color',orange)      % Prediction only
-plot(-symptoms:1:(length(IsimSymptoms)-symptoms-1),IsimSymptoms,'Color',yellow,'LineWidth',1)
+plot(-symptoms+fitbegin:1:(length(IsimSymptoms)-symptoms+fitbegin-1),IsimSymptoms,'Color',yellow,'LineWidth',1)
 plot(dataSKpred(:,1),dataSKpred(:,9),'kx','MarkerSize',10)
 
 xticks(DayPred)

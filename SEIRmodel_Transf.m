@@ -8,17 +8,10 @@ blue   = [0      0.4470 0.7410];
 orange = [0.8500 0.3250 0.0980];
 yellow = [0.9290, 0.6940, 0.1250];
 
-
-fitBegin=15;                              % Day to begin the fit
-col=1;
-alp=1;
-
-for fitBegin=10:1:20
-
-
 % Data reading and preparation
 importData;                              % Script to import the data from CSV
 
+fitBegin=17;                              % Day to begin the fit
 
 I=cumsum(Confirmed)';      % Cumulative sum of daily cases, transpose to make it compatible w/ E. Cheynet's code
 R=cumsum(Recovered)';      % Cumulative sum of daily cases, transpose to make it compatible w/ E. Cheynet's code
@@ -96,44 +89,35 @@ D0 = D(1);
 [alpha1,beta1,gamma1,delta1,Lambda1,Kappa1] = fit_SEIQRDP(I,R,D,Npop,E0,I0,time,guess);
 
 
-%% Simulate for short term (e.g. fit control)
+%% My interpretation
 
-figure(100)
-N = numel(time1);
-t = [0:N-1].*dt;
-[Ss,Es,Is,Qs,Rs,Ds,Ps] = SEIQRDP(alpha1,beta1,gamma1,delta1,Lambda1,Kappa1,Npop,E0,I0,Q0,R0,D0,t);
-
-% Prediction
-semilogy(time1,Qs,'Color',blue*col);
-hold on
-semilogy(time1,Rs,'Color',orange*col);
-semilogy(time1,Ds,'Color',[0 0 0]);
-
-% Data
-semilogy(time,(I-R)','Color',blue,'Marker','o','LineStyle','none');
-semilogy(time,(R)','Color',orange,'Marker','o','LineStyle','none');
-semilogy(time,(D)','ko');
+lambda0=Lambda1(1);
+lambda1=Lambda1(2);
+kappa0=Kappa1(1);
+kappa1=Kappa1(2);
 
 
- ylim([0,1.1*Npop])
-ylabel('Pocet pripadov')
-xlabel('Cas (dni)')
-% leg = {'susceptible','exposed','infectious','quarantined','recovered','Dead','insusceptible'};
-leg = {'Infekcni','Vylieceni','Mrtvi'};
-legend(leg{:},'location','northeastoutside')
 
-set(gcf,'color','w')
-grid on
-axis tight
-% ylim([1,8e4])
-set(gca,'yscale','lin')
+FileName             = 'SEIQRDP_ODE';              % File describing the SIR model structure
+Order                = [3 0 7];                    % Model orders [ny nu nx]
+Parameters           = [alpha1,beta1,gamma1,delta1,lambda0,lambda1,kappa0,kappa1];     % Initial values of parameters
+InitialStates        = [Npop;E0;I0;Q0;R0;D0;0];  % Initial values of  [S I R] states
+Ts                   = 0;                      % Time-continuous system
 
-title('COVID-19 na Slovensku, SEIQRDP model (Fit detail)')
+% Set identification options
+SEIQRDPinit = idnlgrey(FileName,Order,Parameters,InitialStates,Ts,'TimeUnit','days','Name','SEIQRDP Model');
+%SEIQRDPinit = setpar(SEIQRDPinit,'Name',{'beta (exposure rate)','sigma (infection rate)','gamma (removal rate)','lambda (birth rate)','mu (death rate)'});
+%SEIQRDPinit = setinit(SEIQRDPinit,'Name',{'Susceptible' 'Exposed' 'Infected' 'Removed'});
 
 
-cd out
-print(['skCOVID19_SEIQRD_Fit'],'-dpng','-r0')
-cd ..
+udata = iddata([],zeros(365,0),1);
+opt = simOptions('InitialCondition',InitialStates);
+sim(SEIQRDPinit ,udata,opt);
+[y a x]=sim(SEIQRDPinit,udata,opt);
+% RES.OutputData(end,1)-RES.OutputData(1,1);
+% return
+
+
 
 
 %% Simulate for long term (e.g. fit control)
@@ -152,10 +136,12 @@ semilogy(t,Q,'r',t,R,'b',t,D,'k');
 
 
 % Prediction
-semilogy(t,Q,'Color',blue*col);
+semilogy(t,E,t,I,t,Q,t,R,t,D);
+
 hold on
-semilogy(t,R,'Color',orange*col);
-semilogy(t,D,'Color',[0.1 0.1 0.1]*col);
+t=1:365
+semilogy(t,x(:,2),'k--',t,x(:,3),'k--',t,x(:,4),'k--',t,x(:,5),'k--');
+
 
 % Data
 % semilogy(time,(I-R)','Color',blue,'Marker','o','LineStyle','none');
@@ -181,7 +167,7 @@ title('COVID-19 na Slovensku, SEIQRDP model (Dlhodoba projekcia)')
 
 
 d1=datetime(2020,3,6,'Format','d.M'); % First confirmed case
-DayLT=1:30:250;
+DayLT=1:30:365;
 DateLT = datestr(d1:30:d1+365); % Date array for predictions
 
 xticks(DayLT)
@@ -189,8 +175,4 @@ xticklabels(DateLT)
 xtickangle(90)
 
 
-cd out
-print(['skCOVID19_SEIQRD_LongTerm'],'-dpng','-r0')
-cd ..
 
-end
