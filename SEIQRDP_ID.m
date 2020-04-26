@@ -1,125 +1,54 @@
 clc; clear;                   % Cleanup 
 hold off;                   % Useful for tuning
 
+% Use the wrong fits to comute a statistical uncertainity
+
+warning('off','Ident:general:modelDataTU'); % Stop 'sim' whining about time units, they are just fine
+%'MATLAB:nearlySingularMatrix'
+
+%https://www.cia.gov/library/publications/the-world-factbook/geos/lo.html
+popSize=5.440602;            % Population size in millions
+NPop=popSize*1E6;        % Population size
 
 %% Colors
 blue   = [0      0.4470 0.7410];
 orange = [0.8500 0.3250 0.0980];
 yellow = [0.9290, 0.6940, 0.1250];
+gray = [255 255 255]/255;
 
 first=1;
 
-for fitBegin=10:1:11;     % Day to begin the fit
-
-% Data reading and preparation
-importData;                              % Script to import the data from CSV
-
-I=cumsum(Confirmed);      % Cumulative sum of daily cases, transpose to make it compatible w/ E. Cheynet's code
-R=cumsum(Recovered);      % Cumulative sum of daily cases, transpose to make it compatible w/ E. Cheynet's code
-D=cumsum(Deaths);         % Cumulative sum of daily cases, transpose to make it compatible w/ E. Cheynet's code
-I=I-R-D;                   % Active infections
-
-D=D(fitBegin:end);
-I=I(fitBegin:end);
-R=R(fitBegin:end);
+fitPrev=inf;
+fitBeginBest=1;
 
 
-%% Initial parameter guesses and conditions
-Npop= 5.45E6;                           % Population of SLovakia
+fitTestBegin=1;
+fitTestSpan=31;
 
-E0 = I(1); % Initial number of exposed cases. Unknown but unlikely to be zero.
-I0 = I(1); % Initial number of infectious cases. Unknown but unlikely to be zero.
-Q0 = I(1);
-R0 = R(1);
-D0 = D(1);
-P0 = 0;    % No one is protected
+%fitTestSpan=31;
 
-%% My interpretation
-
-Ts = 1;                              % Sampling [1 day]
-data = iddata([I R D],[],Ts);        % Create identification data object
-data.TimeUnit='days';                % Time units
-data.OutputName = [{'Infected'};{'Recovered'};{'Dead'}];              % Output name
-data.OutputUnit = [{'Cases'};{'Cases'};{'Cases'}];                          % Output unit
-%dataToFit=data(fitBegin:end);    % Create dataset itslef.
-
-gamma0=0.1;
-gamma1=0.002;
-mu=3.5E-4;
+mod=1;
+iterations=100;
+method = ["gna","lsqnonlin"];
+%method = ["fmincon"];
+figure(101)
 
 
-alpha = 0.15;
-beta = 1;        % [Days] 
-sigma = 7;       % [Days] Latent period
-delta = 10;      % [Days] Quaratine period
+disp(['Day',' ','MSE','   ','FPE', '   AIC','    AICc','    nAIC'])
+for i=1:1:length(method)
+%gray=gray-1/fitTestSpan; % This is only for colors.
+gray=gray*0.8;
 
-FileName             = 'SEIQRDP_ODE';              % File describing the SIR model structure
-Order                = [3 0 7];                    % Model orders [ny nu nx]
-Parameters           = [alpha,1/beta,1/sigma,1/delta,gamma0,gamma1,mu];     % Initial values of parameters
-InitialStates        = [Npop-E0-I0-Q0-R0-D0;E0;I0;Q0;R0;D0;0];  % Initial values of  [S I R] states
-Ts                   = 0;                      % Time-continuous system
+disp(['-----------------'])
+disp(['Fit method: ',method(i)])
 
-% Set identification options
-SEIQRDPinit = idnlgrey(FileName,Order,Parameters,InitialStates,Ts,'TimeUnit','days','Name','SEIQRDP Model');
-%SEIQRDPinit = setpar(SEIQRDPinit,'Name',{'beta (exposure rate)','sigma (infection rate)','gamma (removal rate)','lambda (birth rate)','mu (death rate)'});
-%SEIQRDPinit = setinit(SEIQRDPinit,'Name',{'Susceptible' 'Exposed' 'Infected' 'Removed'});
-
-% --------------Parameters--------------------
-
-% alpha - protection rate
-SEIQRDPinit.Parameters(1).Minimum = 0.1;      
-SEIQRDPinit.Parameters(1).Maximum = 0.2;   
-SEIQRDPinit.Parameters(1).Fixed = false;
-
-% beta - infection rate
-SEIQRDPinit.Parameters(2).Minimum = 0.5;    % [1/days] 
-SEIQRDPinit.Parameters(2).Maximum = 2;      % [1/days]       
-SEIQRDPinit.Parameters(2).Fixed = false;
-    
-% sigma - latent period
-SEIQRDPinit.Parameters(3).Minimum = 1/14;   % [1/days] 
-SEIQRDPinit.Parameters(3).Maximum = 1/1;    % [1/days] 
-SEIQRDPinit.Parameters(3).Fixed = false; 
-
-% delta - quarantining period 1/days
-%SEIQRDPinit.Parameters(4).Minimum = 1/21;  
-%SEIQRDPinit.Parameters(4).Maximum = 1/7;    % [1/days] 
-SEIQRDPinit.Parameters(4).Fixed = false; 
-
-% gamma0 - recovery rate
-%SEIQRDPinit.Parameters(5).Minimum = 0.01;   % [1/days] 
-%SEIQRDPinit.Parameters(5).Maximum = 0.1;    % [1/days] 
-SEIQRDPinit.Parameters(5).Fixed = false; 
-
-% gamma1 - recovery rate
-%SEIQRDPinit.Parameters(6).Minimum = 1/21;   % [1/days] 
-%SEIQRDPinit.Parameters(6).Maximum = 1/1;    % [1/days] 
-SEIQRDPinit.Parameters(6).Fixed = false; 
-
-% mu - recovery rate
-%SEIQRDPinit.Parameters(7).Minimum = 1/21;   % [1/days] 
-%SEIQRDPinit.Parameters(7).Maximum = 1/1;    % [1/days] 
-SEIQRDPinit.Parameters(7).Fixed = false;
+for fitBegin=fitTestBegin:1:fitTestSpan;     % Day to begin the fit
 
 
+[SEIQRDPm,InitialStates] = fitSEIRDQP(fitBegin,iterations,mod,method(i));
+disp([num2str(fitBegin),'   ',num2str(round(SEIQRDPm.Report.Fit.MSE)),'   ',num2str(round(SEIQRDPm.Report.Fit.FPE)),'   ',num2str(round(SEIQRDPm.Report.Fit.AIC)),'   ',num2str(round(SEIQRDPm.Report.Fit.AICc))])
 
-% --------------Initial conditions--------------------
-% Susceptibles
-SEIQRDPinit.InitialStates(1).Fixed = false;
-SEIQRDPinit.InitialStates(2).Fixed = false;   
-SEIQRDPinit.InitialStates(3).Fixed = false;   
-SEIQRDPinit.InitialStates(4).Fixed = true;   
-SEIQRDPinit.InitialStates(5).Fixed = true;   
-SEIQRDPinit.InitialStates(6).Fixed = true;  
-SEIQRDPinit.InitialStates(7).Fixed = false;  
-
-optEst = nlgreyestOptions('Display','on','EstCovar',true); %gna
-optEst.SearchMethod= 'gna';
-optEst.SearchOption.MaxIter = 20;                % Maximal number of iterations
-SEIQRDPm = nlgreyest(data,SEIQRDPinit,optEst);              % Run identification procedure
-
-
-udata = iddata([],zeros(230,0),1);
+udata = iddata([],zeros(280,0),1);
 opt = simOptions('InitialCondition',InitialStates);
 %sim(SEIQRDPinit ,udata,opt);
 % RES.OutputData(end,1)-RES.OutputData(1,1);
@@ -128,38 +57,145 @@ opt = simOptions('InitialCondition',InitialStates);
 
 
 
-
+    
 %% Simulate 
+
+t=fitBegin:length(X)+fitBegin-1;
+h1=semilogy(t,X(:,4),':','Color',gray,'LineWidth',0.5);
+hold on;
+h2=semilogy(t,X(:,5),':','Color',gray,'LineWidth',0.5);
+h3=semilogy(t,X(:,6),':','Color',gray,'LineWidth',0.5);
+
+set(get(get(h1,'Annotation'),'LegendInformation'),'IconDisplayStyle','off');
+set(get(get(h2,'Annotation'),'LegendInformation'),'IconDisplayStyle','off');
+set(get(get(h3,'Annotation'),'LegendInformation'),'IconDisplayStyle','off');
+
+
+% If prediction does not fly off the charts
+% Probably these are some local minimums, should check and compar 
+% Parameters
+
+%MSE 1E6
+%FPE 1E5
+
+% If protectin rate is not 0
+if SEIQRDPm.Parameters(1).Value>eps
+    
+    %   9.0054e-04 alpha was pretty bad.
+    
+%No end in sight
+if (X(end,4)<1E2) % This criterion should be improved
+% If the error is smaller than the previous best
+ if SEIQRDPm.Report.Fit.FPE < fitPrev
+    fitBeginBest=fitBegin;
+    fitPrev=SEIQRDPm.Report.Fit.FPE;
+    methodBest=i;
+ end
+end
+
+end %Check if not 0
+
+
+end % Fit days
+end % Methods
+
+
+
+%% Best fit
+runLength=300;
+
+fitBegin=fitBeginBest;
+
+[SEIQRDPm,InitialStates] = fitSEIRDQP(fitBeginBest,iterations,mod,method(methodBest));
+udata = iddata([],zeros(runLength,0),1);
+opt = simOptions('InitialCondition',InitialStates);
+%opt.AbsTol=1E-6;
+%sim(SEIQRDPinit ,udata,opt);
+% RES.OutputData(end,1)-RES.OutputData(1,1);
+% return
+[Y A X]=sim(SEIQRDPm,udata,opt);
 figure(101)
 t=fitBegin:length(X)+fitBegin-1;
-semilogy(t,X(:,4),'-','Color',blue,'LineWidth',0.5);
+semilogy(t,X(:,4),'-','Color',blue,'LineWidth',1);
 hold on;
-semilogy(t,X(:,5),'-','Color',orange,'LineWidth',0.5);
-semilogy(t,X(:,6),'k-','LineWidth',0.5);
+semilogy(t,X(:,5),'-','Color',orange,'LineWidth',1);
+semilogy(t,X(:,6),'k-','LineWidth',1);
 
-if(first)
-    
+%pause
+%% Short term, based on fit and current data
+
+importData;                              % Script to import the data from CSV
+
+I=cumsum(Confirmed);      % Cumulative sum of daily cases, transpose to make it compatible w/ E. Cheynet's code
+R=cumsum(Recovered);      % Cumulative sum of daily cases, transpose to make it compatible w/ E. Cheynet's code
+D=cumsum(Deaths);         % Cumulative sum of daily cases, transpose to make it compatible w/ E. Cheynet's code
+I=I-R-D;                   % Active infections
+
+
+Snow = X(max(Day)-fitBegin,1);
+Enow = X(max(Day)-fitBegin,2);
+Inow = X(max(Day)-fitBegin,3);
+Qnow = I(end);
+Rnow = R(end);
+Dnow = D(end);
+Pnow = X(max(Day)-fitBegin,7);
+
+
+
+udata = iddata([],zeros(14,0),1);
+opt = simOptions('InitialCondition',[Snow,Enow,Inow,Qnow,Rnow,Dnow,Pnow]');
+%sim(SEIQRDPinit ,udata,opt);
+% RES.OutputData(end,1)-RES.OutputData(1,1);
+% return
+[Yst Ast Xst]=sim(SEIQRDPm,udata,opt);
+InfectedTomorrow=round(Xst(2,4)+Xst(2,5)+Xst(2,6));
+
+InfectingTomorrow=round(Xst(2,3));
+ExposedTomorrow=round(Xst(2,2));
 %% Report
+
+%pause
+clc
+
 d1=datetime(2020,3,6,'Format','d.M'); % First confirmed case
-DayLT=1:30:365;
-DateLT = datestr(d1:30:d1+365); % Date array for predictions
+DayLT=[1; 26; 56; 87; 117; 148; 179; 209; 240; 270; 331];
+DateLT = {datestr(d1); datestr(d1+26); datestr(d1+56); datestr(d1+87); datestr(d1+117); datestr(d1+148); datestr(d1+179); datestr(d1+209); datestr(d1+240); datestr(d1+270); datestr(d1+301)};% Date array for predictions
 
+disp(['SEIQRDP 7-stavový homogénný infektologický model bez vitálnej dynamiky'])
+disp(['(Predikcia s parametrami na základe dostupných údajov.)'])
+disp(['----------------------------'])
+disp(['Overené prípady:             ',num2str(InfectedTomorrow),' (do konca dna)'])
+disp(['Nové overené prípady:         ',num2str(InfectedTomorrow-(I(end)+D(end)+R(end))),' (do konca dna)'])
+disp(['Celk. pocet infekcných:     ',num2str(InfectedTomorrow+InfectingTomorrow),' (celkové aktívne infekcie, odhad, ',num2str(InfectingTomorrow),' mimo testov)'])
+disp(['Pocet nakazených:            ',num2str(ExposedTomorrow),' (v inkubacnej dobe, odhad)'])
 [valMax indMax]=max(X(:,4));
-disp(['Maximum aktívne infekcnych pripadov: ',num2str(round(valMax))])
-disp(['Vrchol infekcií: ',datestr(d1+fitBegin+indMax)])
-disp(['Infikovaní: ',num2str(round(max(X(:,5)))+round(max(X(:,6))))])
-disp(['Vyliecení: ',num2str(round(max(X(:,5))))])
-disp(['Úmrtia: ',num2str(round(max(X(:,6))))])
-disp(['Koniec infekcií: ',datestr(d1+fitBegin+min(find(X(:,4)<=10))),' (<10 aktívnych prípadov)'])
+disp(['Maximum aktívnych infekcií: ',num2str(round(valMax)),' (pre celu vlnu ochoreni, overených)'])
+disp(['Vrchol overených infekcií:    ',datestr(d1+fitBegin+indMax)])
+disp(['Infikovaní:                 ',num2str(round(max(X(:,5)))+round(max(X(:,6)))),' (pre celu vlnu ochoreni)'])
+disp(['Vyliecení:                  ',num2str(round(max(X(:,5)))),' (pre celu vlnu ochoreni)'])
+disp(['Úmrtia:                       ',num2str(round(max(X(:,6)))),' (pre celu vlnu ochoreni)'])
+disp(['Koniec infekcií:            ',datestr(d1+fitBegin+min(find(X(max(Day):end,4)<1))),' (0 aktívnych prípadov)'])
 
+
+disp(['Miera ochrany alpha:           ',num2str(round(SEIQRDPm.Parameters(1).Value*1000)/1000),' '])
+
+disp(['Infekcna doba 1/beta:         ',num2str(round(1/SEIQRDPm.Parameters(2).Value*100)/100),' [dni]'])
+disp(['Inkubacna doba 1/sigma:       ',num2str(round(1/SEIQRDPm.Parameters(3).Value*100)/100),' [dni]'])
+disp(['Izolacna doba 1/delta:     ',num2str(round(1/SEIQRDPm.Parameters(4).Value*100)/100),' [dni]'])
+disp(['Doba vyliecenia 1/gamma0:     ',num2str(round(1/SEIQRDPm.Parameters(5).Value*100)/100),' [dni]'])
+disp(['Miera umrtnosti                ',num2str(round(SEIQRDPm.Parameters(7).Value*100000)/100000),''])
+
+
+%disp(['Miera odstránenia prípadov gamma: ',num2str(gammaEst),', krátkodobý fit'])
+disp(['Zhoda modelu (infekcie):      ',num2str(round(SEIQRDPm.Report.Fit.FitPercent(1)*10)/10),'%'])
+disp(['Zhoda modelu (vylieceni):     ',num2str(round(SEIQRDPm.Report.Fit.FitPercent(2)*10)/10),'%'])
+disp(['Zhoda modelu (umrtia):        ',num2str(round(SEIQRDPm.Report.Fit.FitPercent(3)*10)/10),'%'])
+disp(' ')
+disp(['Najlepší fit od ',num2str(fitBeginBest),' dna nakazy v rozmedzi ',num2str(fitTestBegin),'-',num2str(fitTestSpan),' dna az dodnes, kde alpha>0.'])
 first=0;
-end
-
-end
 
 
-
-
+%% Finish plot
 
 % Data reading and preparation
 importData;                              % Script to import the data from CSV
@@ -169,32 +205,56 @@ R=cumsum(Recovered);      % Cumulative sum of daily cases, transpose to make it 
 D=cumsum(Deaths);         % Cumulative sum of daily cases, transpose to make it compatible w/ E. Cheynet's code
 I=I-R-D;                   % Active infections
 
-semilogy(Day,I,'-o','Color',blue,'MarkerSize',4,'LineWidth',1.5)
+semilogy(Day,I,'o','Color',blue,'MarkerSize',4,'LineWidth',0.1)
 hold on
-semilogy(Day,R,'-o','Color',orange,'MarkerSize',4,'LineWidth',1.5)
-semilogy(Day,D,'k-o','MarkerSize',4,'LineWidth',1.5)
+semilogy(Day,R,'o','Color',orange,'MarkerSize',4,'LineWidth',0.1)
+semilogy(Day,D,'ko','MarkerSize',4,'LineWidth',0.1)
 
 ylabel('Pocet pripadov')
 xlabel('Cas (dni od prveho pripadu)')
-leg = {'Infekcni','Vylieceni','Mrtvi'};
-legend(leg{:},'location','northeastoutside')
+
 set(gcf,'color','w')
 grid on
 axis tight
 set(gca,'yscale','lin')
-title('COVID-19 na Slovensku, SEIQRDP model (Dlhodoba projekcia)')
+title('COVID-19 na Slovensku, SEIQRDP model')
 
 xticks(DayLT)
 xticklabels(DateLT)
 xtickangle(90)
+pandemicEnd=text(fitBegin+min(find(X(max(Day):end,4)<1)),50,datestr(d1+fitBegin+min(find(X(:,4)<1))));
+set(pandemicEnd,'Rotation',90)
+set(pandemicEnd,'FontSize',8)
+
+pandemicPeak=text(fitBegin+indMax,valMax*1.1,datestr(d1+fitBegin+indMax),'HorizontalAlignment','center');
+set(pandemicPeak,'Rotation',0)
+set(pandemicPeak,'FontSize',8)
 
 
+leg = {'Infekcni (model)','Vylieceni (model)','Mrtvi (model)','Infekcni (data)','Vylieceni (data)','Mrtvi (data)'};
+legend(leg{:},'location','northeastoutside')
+
+
+axis([0,fitBegin+min(find(X(max(Day):end,4)<1))+20,0,max(X(:,5))*1.1])
+%axis([0,270,0,max(X(:,5))*1.1])
 cd out
 print(['skCOVID19_SEIQRD_LongTerm'],'-dpng','-r0')
 cd ..
 
 axis([0,max(Day)*1.1,0,max(I)*1.1])
+
 cd out
 print(['skCOVID19_SEIQRD_LongTermFit'],'-dpng','-r0')
+cd ..
+
+axis([0,fitBegin+min(find(X(:,4)<1))+20,0,max(X(:,5))*1.1])
+
+
+set(gca,'yscale','log')
+
+axis([0,fitBegin+min(find(X(:,4)<1))+20,1,1E4])
+%axis([0,270,0,max(X(:,5))*1.1])
+cd out
+print(['skCOVID19_SEIQRD_LongTerm_Log'],'-dpng','-r0')
 cd ..
 
