@@ -45,10 +45,10 @@ disp(['Fit method: ',method(i)])
 for fitBegin=fitTestBegin:1:fitTestSpan;     % Day to begin the fit
 
 
-[SEIQRDPm,InitialStates] = fitSEIRDQP(fitBegin,iterations,mod,method(i));
+[SEIQRDPm,InitialStates] = fitSEIRDQP2(fitBegin,iterations,mod,method(i));
 disp([num2str(fitBegin),'   ',num2str(round(SEIQRDPm.Report.Fit.MSE)),'   ',num2str(round(SEIQRDPm.Report.Fit.FPE)),'   ',num2str(round(SEIQRDPm.Report.Fit.AIC)),'   ',num2str(round(SEIQRDPm.Report.Fit.AICc))])
 
-udata = iddata([],zeros(280,0),1);
+udata = iddata([],zeros(2*365,0),1);
 opt = simOptions('InitialCondition',InitialStates);
 %sim(SEIQRDPinit ,udata,opt);
 % RES.OutputData(end,1)-RES.OutputData(1,1);
@@ -102,11 +102,11 @@ end % Methods
 
 
 %% Best fit
-runLength=300;
+runLength=2*365;
 
 fitBegin=fitBeginBest;
 
-[SEIQRDPm,InitialStates] = fitSEIRDQP(fitBeginBest,iterations,mod,method(methodBest));
+[SEIQRDPm,InitialStates] = fitSEIRDQP2(fitBeginBest,iterations,mod,method(methodBest));
 udata = iddata([],zeros(runLength,0),1);
 opt = simOptions('InitialCondition',InitialStates);
 %opt.AbsTol=1E-6;
@@ -158,8 +158,8 @@ ExposedTomorrow=round(Xst(2,2));
 clc
 
 d1=datetime(2020,3,6,'Format','d.M'); % First confirmed case
-DayLT=[1; 26; 56; 87; 117; 148; 179; 209; 240; 270; 331];
-DateLT = {datestr(d1); datestr(d1+26); datestr(d1+56); datestr(d1+87); datestr(d1+117); datestr(d1+148); datestr(d1+179); datestr(d1+209); datestr(d1+240); datestr(d1+270); datestr(d1+301)};% Date array for predictions
+DayLT=[1; 26; 56; 87; 117; 148; 179; 209; 240; 270; 301; 332; 361];
+DateLT = {datestr(d1); datestr(d1+26); datestr(d1+56); datestr(d1+87); datestr(d1+117); datestr(d1+148); datestr(d1+179); datestr(d1+209); datestr(d1+240); datestr(d1+270); datestr(d1+301); datestr(d1+332); datestr(d1+361)};% Date array for predictions
 
 disp(['SEIQRDP 7-stavový homogénný infektologický model bez vitálnej dynamiky'])
 disp(['(Predikcia s parametrami na základe dostupných údajov.)'])
@@ -174,7 +174,7 @@ disp(['Vrchol overených infekcií:    ',datestr(d1+fitBegin+indMax)])
 disp(['Infikovaní:                 ',num2str(round(max(X(:,5)))+round(max(X(:,6)))),' (pre celu vlnu ochoreni)'])
 disp(['Vyliecení:                  ',num2str(round(max(X(:,5)))),' (pre celu vlnu ochoreni)'])
 disp(['Úmrtia:                       ',num2str(round(max(X(:,6)))),' (pre celu vlnu ochoreni)'])
-disp(['Koniec infekcií:            ',datestr(d1+fitBegin+min(find(X(max(Day):end,4)<1))),' (0 aktívnych prípadov)'])
+disp(['Koniec infekcií:            ',datestr(d1+fitBegin+min(find(X(max(Day):end,4)<10))),' (<10 aktívnych prípadov)'])
 
 
 disp(['Miera ochrany alpha:           ',num2str(round(SEIQRDPm.Parameters(1).Value*1000)/1000),' '])
@@ -183,7 +183,7 @@ disp(['Infekcna doba 1/beta:         ',num2str(round(1/SEIQRDPm.Parameters(2).Va
 disp(['Inkubacna doba 1/sigma:       ',num2str(round(1/SEIQRDPm.Parameters(3).Value*100)/100),' [dni]'])
 disp(['Izolacna doba 1/delta:     ',num2str(round(1/SEIQRDPm.Parameters(4).Value*100)/100),' [dni]'])
 disp(['Doba vyliecenia 1/gamma0:     ',num2str(round(1/SEIQRDPm.Parameters(5).Value*100)/100),' [dni]'])
-disp(['Miera umrtnosti                ',num2str(round(SEIQRDPm.Parameters(7).Value*100000)/100000),''])
+disp(['Miera umrtnosti                ',num2str(round(SEIQRDPm.Parameters(6).Value*100000)/100000),''])
 
 
 %disp(['Miera odstránenia prípadov gamma: ',num2str(gammaEst),', krátkodobý fit'])
@@ -193,6 +193,7 @@ disp(['Zhoda modelu (umrtia):        ',num2str(round(SEIQRDPm.Report.Fit.FitPerc
 disp(' ')
 disp(['Najlepší fit od ',num2str(fitBeginBest),' dna nakazy v rozmedzi ',num2str(fitTestBegin),'-',num2str(fitTestSpan),' dna az dodnes, kde alpha>0.'])
 first=0;
+
 
 %% Finish plot
 
@@ -216,7 +217,7 @@ set(gcf,'color','w')
 grid on
 axis tight
 set(gca,'yscale','lin')
-title('COVID-19 na Slovensku, SEIQRDP model (gamma(t))')
+title('COVID-19 na Slovensku, SEIQRDP model')
 
 xticks(DayLT)
 xticklabels(DateLT)
@@ -237,13 +238,13 @@ legend(leg{:},'location','northeastoutside')
 axis([0,fitBegin+min(find(X(max(Day):end,4)<10))+20,0,max(X(:,5))*1.1])
 %axis([0,270,0,max(X(:,5))*1.1])
 cd out
-print(['skCOVID19_SEIQRD_GammaT_LongTerm'],'-dpng','-r0')
+print(['skCOVID19_SEIQRD_LongTerm'],'-dpng','-r0')
 cd ..
 
 axis([0,max(Day)*1.1,0,max(I)*1.1])
 
 cd out
-print(['skCOVID19_SEIQRD_GammaT_LongTermFit'],'-dpng','-r0')
+print(['skCOVID19_SEIQRD_LongTermFit'],'-dpng','-r0')
 cd ..
 
 axis([0,fitBegin+min(find(X(max(Day):end,4)<10))+20,0,max(X(:,5))*1.1])
@@ -254,5 +255,6 @@ set(gca,'yscale','log')
 axis([0,fitBegin+min(find(X(max(Day):end,4)<10))+20,1,1E4])
 %axis([0,270,0,max(X(:,5))*1.1])
 cd out
-print(['skCOVID19_SEIQRD_GammaT_LongTerm_Log'],'-dpng','-r0')
+print(['skCOVID19_SEIQRD_LongTerm_Log'],'-dpng','-r0')
 cd ..
+
