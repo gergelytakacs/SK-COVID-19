@@ -1,24 +1,25 @@
 SEIQRDP 7-stavový homogénný infektologický model bez vitálnej dynamiky
 (Predikcia s parametrami na základe dostupných údajov.)
 ----------------------------
-Overené prípady:             1424 (do konca dna)
-Nové overené prípady:         45 (do konca dna)
-Celk. pocet infekcných:     1467 (celkové aktívne infekcie, odhad, 43 mimo testov)
-Pocet nakazených:            57 (v inkubacnej dobe, odhad)
-Maximum aktívnych infekcií: 1369 (pre celu vlnu ochoreni, overených)
-Vrchol overených infekcií:    16-May-2020
-Infikovaní:                 2341 (pre celu vlnu ochoreni)
-Vyliecení:                  2218 (pre celu vlnu ochoreni)
-Úmrtia:                       123 (pre celu vlnu ochoreni)
-Koniec infekcií:            18-Feb-2021 (<10 aktívnych prípadov)
-Miera ochrany alpha:           0.005 
-Infekcna doba 1/beta:         0.77 [dni]
-Inkubacna doba 1/sigma:       1.3 [dni]
-Izolacna doba 1/delta:     0.96 [dni]
-Doba vyliecenia 1/gamma0:     67.43 [dni]
-Miera umrtnosti                0.00082
-Zhoda modelu (infekcie):      84%
-Zhoda modelu (vylieceni):     62%
-Zhoda modelu (umrtia):        73.2%
+Overené prípady:             1405 (do konca dna)
+Nové overené prípady:         24 (do konca dna)
+Celk. pocet infekcných:     1467 (celkové aktívne infekcie, odhad, 62 mimo testov)
+Pocet nakazených:            73 (v inkubacnej dobe, odhad)
+Maximum aktívnych infekcií: 1032 (pre celu vlnu ochoreni, overených)
+Vrchol overených infekcií:    04-May-2020
+Infikovaní:                 1629 (pre celu vlnu ochoreni)
+Vyliecení:                  1544 (pre celu vlnu ochoreni)
+Úmrtia:                       85 (pre celu vlnu ochoreni)
+Koniec infekcií:            27-Jan-2021 (<10 aktívnych prípadov)
+Miera ochrany alpha:           0.023 
+Infekcna doba 1/beta:         1.27 [dni]
+Inkubacna doba 1/sigma:       3.68 [dni]
+Izolacna doba 1/delta:     2.64 [dni]
+Doba vyliecenia 1/gamma0:     69.86 [dni]
+Miera umrtnosti                0.00079
+Zhoda modelu (infekcie):      92.1%
+Zhoda modelu (vylieceni):     62.2%
+Zhoda modelu (umrtia):        72.8%
  
-Najlepší fit od 4 dna nakazy v rozmedzi 1-31 dna az dodnes, kde alpha>0.
+Najlepší fit od 1 dna nakazy v rozmedzi 1-31 dna az dodnes, kde alpha>0.
+>> 
