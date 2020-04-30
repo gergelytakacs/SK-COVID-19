@@ -23,7 +23,7 @@ fitBeginBest=1;
 
 
 fitTestBegin=1;
-fitTestSpan=31;
+fitTestSpan=21;
 
 %fitTestSpan=31;
 
