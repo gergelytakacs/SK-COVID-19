@@ -2,23 +2,23 @@ SEIQRDP 7-stavový homogénný infektologický model bez vitálnej dynamiky
 (Predikcia s parametrami na základe dostupných údajov.)
 ----------------------------
 Overené prípady:             1419 (do konca dna)
-Nové overené prípady:         16 (do konca dna)
-Celk. pocet infekcných:     1439 (celkové aktívne infekcie, odhad, 20 mimo testov)
-Pocet nakazených:            13 (v inkubacnej dobe, odhad)
-Maximum aktívnych infekcií: 948 (pre celu vlnu ochoreni, overených)
-Vrchol overených infekcií:    27-Apr-2020
-Infikovaní:                 1556 (pre celu vlnu ochoreni)
-Vyliecení:                  1510 (pre celu vlnu ochoreni)
-Úmrtia:                       46 (pre celu vlnu ochoreni)
-Koniec infekcií:            12-Jul-2020 (0 aktívnych prípadov)
-Miera ochrany alpha:           0.012 
-Infekcna doba 1/beta:         0.92 [dni]
-Inkubacna doba 1/sigma:       1 [dni]
-Izolacna doba 1/delta:     1.34 [dni]
-Doba vyliecenia 1/gamma0:     2.41 [dni]
-Miera umrtnosti                0.00087
-Zhoda modelu (infekcie):      88.6%
-Zhoda modelu (vylieceni):     80%
-Zhoda modelu (umrtia):        76.6%
+Nové overené prípady:         12 (do konca dna)
+Celk. pocet infekcných:     1467 (celkové aktívne infekcie, odhad, 48 mimo testov)
+Pocet nakazených:            17 (v inkubacnej dobe, odhad)
+Maximum aktívnych infekcií: 938 (pre celu vlnu ochoreni, overených)
+Vrchol overených infekcií:    25-Apr-2020
+Infikovaní:                 1523 (pre celu vlnu ochoreni)
+Vyliecení:                  1483 (pre celu vlnu ochoreni)
+Úmrtia:                       40 (pre celu vlnu ochoreni)
+Koniec infekcií:            14-Jun-2020 (0 aktívnych prípadov)
+Miera ochrany alpha:           0.053 
+Infekcna doba 1/beta:         1.44 [dni]
+Inkubacna doba 1/sigma:       2.82 [dni]
+Izolacna doba 1/delta:     4.17 [dni]
+Doba vyliecenia 1/gamma0:     0.03 [dni]
+Miera umrtnosti                0.00083
+Zhoda modelu (infekcie):      86.9%
+Zhoda modelu (vylieceni):     85%
+Zhoda modelu (umrtia):        70.5%
  
-Najlepší fit od 2 dna nakazy v rozmedzi 1-21 dna az dodnes, kde alpha>0.
+Najlepší fit od 14 dna nakazy v rozmedzi 4-14 dna az dodnes, kde alpha>0.

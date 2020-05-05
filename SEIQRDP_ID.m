@@ -1,6 +1,6 @@
 clc; clear;                   % Cleanup 
 hold off;                   % Useful for tuning
-
+tic
 % Use the wrong fits to comute a statistical uncertainity
 
 warning('off','Ident:general:modelDataTU'); % Stop 'sim' whining about time units, they are just fine
@@ -22,14 +22,14 @@ fitPrev=inf;
 fitBeginBest=1;
 
 
-fitTestBegin=1;
-fitTestSpan=21;
+fitTestBegin=7;
+fitTestSpan=14;
 
 %fitTestSpan=31;
 
 mod=1;
 iterations=100;
-method = ["gna","lsqnonlin"];
+method = ["fmincon","gna","lsqnonlin"];
 %method = ["fmincon"];
 figure(101)
 
@@ -221,7 +221,7 @@ title('COVID-19 na Slovensku, SEIQRDP model (gamma(t))')
 xticks(DayLT)
 xticklabels(DateLT)
 xtickangle(90)
-pandemicEnd=text(fitBegin+min(find(X(max(Day):end,4)<10)),50,datestr(d1+fitBegin+min(find(X(max(Day):end,4)<10))));
+pandemicEnd=text(fitBegin+min(find(X(max(Day):end,4)<1)),50,datestr(d1+fitBegin+min(find(X(max(Day):end,4)<1))));
 set(pandemicEnd,'Rotation',90)
 set(pandemicEnd,'FontSize',8)
 
@@ -256,3 +256,9 @@ axis([0,fitBegin+min(find(X(max(Day):end,4)<10))+20,1,1E4])
 cd out
 print(['skCOVID19_SEIQRD_GammaT_LongTerm_Log'],'-dpng','-r0')
 cd ..
+
+
+set(gca,'yscale','lin')
+axis([0,max(Day)*1.1,0,max(I)*1.1])
+
+disp(['Výpocet trval ',num2str(round(toc/60*10)/10),' minut'])

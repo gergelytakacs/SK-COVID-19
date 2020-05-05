@@ -12,10 +12,8 @@ D=D(fitBegin:end);
 I=I(fitBegin:end);
 R=R(fitBegin:end);
 
-
 %% Initial parameter guesses and conditions
 Npop= 5.45E6;                           % Population of SLovakia
-
 
 E0 = I(1); % Initial number of exposed cases. Unknown but unlikely to be zero.
 I0 = I(1); % Initial number of infectious cases. Unknown but unlikely to be zero.
@@ -24,8 +22,6 @@ R0 = R(1);
 D0 = D(1);
 P0 = 0;    % No one is protected
 S0 = Npop-E0-I0-Q0-R0-D0-P0;
-
-
 
 %% My interpretation
 
@@ -36,30 +32,33 @@ data.OutputName = [{'Infected'};{'Recovered'};{'Dead'}];              % Output n
 data.OutputUnit = [{'Cases'};{'Cases'};{'Cases'}];                          % Output unit
 %dataToFit=data(fitBegin:end);    % Create dataset itslef.
 
-alpha = 0.02;
-beta =  2;        % [Days] 
-sigma = 5;      % [Days] Latent period
-delta = 5;       % [Days] Quaratine period
-gamma0=1/5;
-mu=4E-4;
+alpha  = 0.05;
+beta   = 1.5;        % [Days] 
+sigma  = 3;      % [Days] Latent period
+delta  = 4;       % [Days] Quaratine period
+gamma0 = 1/0.1;
+mu     = 1E-4;
 
 if mod == 1
-    gamma1=0.003;
+    gamma1=0.0001; % was 
 else 
     gamma1=0.0;
 end
     
-    
 
-
-% alpha = 0.02;
-% beta =  2;        % [Days] 
-% sigma = 12;      % [Days] Latent period
-% delta = 4;       % [Days] Quaratine period
+% alpha  = 0.05;
+% beta   = 1.5;        % [Days] 
+% sigma  = 3;      % [Days] Latent period
+% delta  = 4;       % [Days] Quaratine period
+% gamma0 = 1/1;
+% mu     = 4E-4;
 % 
-% gamma0=0.15;
-% gamma1=0.003;
-% mu=4E-4;
+% if mod == 1
+%     gamma1=0.001; % was 
+% else 
+%     gamma1=0.0;
+% end
+
 
 
 FileName             = 'SEIQRDP_ODE';              % File describing the SIR model structure
@@ -76,8 +75,8 @@ SEIQRDPinit = idnlgrey(FileName,Order,Parameters,InitialStates,Ts,'TimeUnit','da
 % --------------Parameters--------------------
 
 % alpha - protection rate
-SEIQRDPinit.Parameters(1).Minimum = 0;      
-SEIQRDPinit.Parameters(1).Maximum = 0.2;   
+SEIQRDPinit.Parameters(1).Minimum = 0.001;      
+SEIQRDPinit.Parameters(1).Maximum = 0.1;   
 SEIQRDPinit.Parameters(1).Fixed = false;
 
 % beta - infection rate
@@ -86,7 +85,7 @@ SEIQRDPinit.Parameters(2).Maximum = 5;      % [1/days]
 SEIQRDPinit.Parameters(2).Fixed = false;
     
 % sigma - latent period
-SEIQRDPinit.Parameters(3).Minimum = 1/31;   % [1/days] 
+SEIQRDPinit.Parameters(3).Minimum = 1/7;   % [1/days] 
 SEIQRDPinit.Parameters(3).Maximum = 1/1;    % [1/days] 
 SEIQRDPinit.Parameters(3).Fixed = false; 
 
@@ -111,7 +110,7 @@ end
     
 % mu - death
 SEIQRDPinit.Parameters(7).Minimum = eps;   % [1/days] 
-%SEIQRDPinit.Parameters(7).Maximum = 1/1;    % [1/days] 
+SEIQRDPinit.Parameters(7).Maximum = 1;    % [1/days] 
 SEIQRDPinit.Parameters(7).Fixed = false;
 
 
@@ -191,6 +190,12 @@ if strcmp(method,'lsqnonlin')
  %optEst.GradientOptions.MinDifference=1E-8;
 end
 
+optEst.OutputWeight=diag([100,10,100]);
+%optEst.OutputWeight=diag([500,25,50]);
+%50,10,5
+% optEst.OutputWeight=diag([120,25,20]);
+% optEst.OutputWeight=diag([100,25,10]);
+%optEst.Regularization.Lambda = 1.1;
 
 
 % Does not converge 'fmincon', 
