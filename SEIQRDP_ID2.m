@@ -22,8 +22,8 @@ fitPrev=inf;
 fitBeginBest=1;
 
 
-fitTestBegin=6;
-fitTestSpan=31;
+fitTestBegin=5;
+fitTestSpan=14;
 
 %fitTestSpan=31;
 

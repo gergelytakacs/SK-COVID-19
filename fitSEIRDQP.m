@@ -36,11 +36,12 @@ alpha  = 0.05;
 beta   = 1.5;        % [Days] 
 sigma  = 3;      % [Days] Latent period
 delta  = 4;       % [Days] Quaratine period
-gamma0 = 1/0.1;
-mu     = 1E-4;
+gamma0 = 1/0.8;
+mu     = 0.002;
+
 
 if mod == 1
-    gamma1=0.0001; % was 
+    gamma1=0.001; % was 
 else 
     gamma1=0.0;
 end
@@ -96,7 +97,7 @@ SEIQRDPinit.Parameters(4).Fixed = false;
 
 % gamma0 - recovery rate
 SEIQRDPinit.Parameters(5).Minimum = eps;   % [1/days] 
-%SEIQRDPinit.Parameters(5).Maximum = 0.1;    % [1/days] 
+SEIQRDPinit.Parameters(5).Maximum = 2;    % [1/days] 
 SEIQRDPinit.Parameters(5).Fixed = false; 
 
 % gamma1 - recovery rate
@@ -190,10 +191,10 @@ if strcmp(method,'lsqnonlin')
  %optEst.GradientOptions.MinDifference=1E-8;
 end
 
-optEst.OutputWeight=diag([100,10,100]);
+%optEst.OutputWeight=diag([1000,10,100]);
 %optEst.OutputWeight=diag([500,25,50]);
 %50,10,5
-% optEst.OutputWeight=diag([120,25,20]);
+ optEst.OutputWeight=diag([120,25,20]);
 % optEst.OutputWeight=diag([100,25,10]);
 %optEst.Regularization.Lambda = 1.1;
 

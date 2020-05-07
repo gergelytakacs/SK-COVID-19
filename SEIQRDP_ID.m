@@ -22,17 +22,18 @@ fitPrev=inf;
 fitBeginBest=1;
 
 
-fitTestBegin=7;
-fitTestSpan=14;
+fitTestBegin=6;
+fitTestSpan=21;
 
 %fitTestSpan=31;
 
 mod=1;
 iterations=100;
-method = ["fmincon","gna","lsqnonlin"];
-%method = ["fmincon"];
-figure(101)
 
+%method = ["lsqnonlin"];
+%method = ["gna","lsqnonlin"];
+method = ["gna","fmincon","lsqnonlin"];
+%method = ["lsqnonlin"];
 
 disp(['Day',' ','MSE','   ','FPE', '   AIC','    AICc','    nAIC'])
 for i=1:1:length(method)
@@ -59,18 +60,20 @@ opt = simOptions('InitialCondition',InitialStates);
 
     
 %% Simulate 
-
+figure(101)
 t=fitBegin:length(X)+fitBegin-1;
 h1=semilogy(t,X(:,4),':','Color',gray,'LineWidth',0.5);
 hold on;
 h2=semilogy(t,X(:,5),':','Color',gray,'LineWidth',0.5);
 h3=semilogy(t,X(:,6),':','Color',gray,'LineWidth',0.5);
 
+
 set(get(get(h1,'Annotation'),'LegendInformation'),'IconDisplayStyle','off');
 set(get(get(h2,'Annotation'),'LegendInformation'),'IconDisplayStyle','off');
 set(get(get(h3,'Annotation'),'LegendInformation'),'IconDisplayStyle','off');
 
-
+set(gca,'yscale','lin')
+axis([0,150,0,1.5E3])
 % If prediction does not fly off the charts
 % Probably these are some local minimums, should check and compar 
 % Parameters
@@ -114,7 +117,7 @@ opt = simOptions('InitialCondition',InitialStates);
 % RES.OutputData(end,1)-RES.OutputData(1,1);
 % return
 [Y A X]=sim(SEIQRDPm,udata,opt);
-figure(101)
+hold on
 t=fitBegin:length(X)+fitBegin-1;
 semilogy(t,X(:,4),'-','Color',blue,'LineWidth',1);
 hold on;
@@ -203,7 +206,7 @@ I=cumsum(Confirmed);      % Cumulative sum of daily cases, transpose to make it 
 R=cumsum(Recovered);      % Cumulative sum of daily cases, transpose to make it compatible w/ E. Cheynet's code
 D=cumsum(Deaths);         % Cumulative sum of daily cases, transpose to make it compatible w/ E. Cheynet's code
 I=I-R-D;                   % Active infections
-
+hold on
 semilogy(Day,I,'o','Color',blue,'MarkerSize',4,'LineWidth',0.1)
 hold on
 semilogy(Day,R,'o','Color',orange,'MarkerSize',4,'LineWidth',0.1)
@@ -233,8 +236,9 @@ set(pandemicPeak,'FontSize',8)
 leg = {'Infekcni (model)','Vylieceni (model)','Mrtvi (model)','Infekcni (data)','Vylieceni (data)','Mrtvi (data)'};
 legend(leg{:},'location','northeastoutside')
 
+axis([0,fitBegin+min(find(X(max(Day):end,4)<1))+10,0,max(X(:,5))*1.1])
 
-axis([0,fitBegin+min(find(X(max(Day):end,4)<10))+20,0,max(X(:,5))*1.1])
+%axis([0,fitBegin+min(find(X(max(Day):end,4)<10))+20,0,max(X(:,5))*1.1])
 %axis([0,270,0,max(X(:,5))*1.1])
 cd out
 print(['skCOVID19_SEIQRD_GammaT_LongTerm'],'-dpng','-r0')
