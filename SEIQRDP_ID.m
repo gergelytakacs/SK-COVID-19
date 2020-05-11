@@ -21,9 +21,13 @@ first=1;
 fitPrev=inf;
 fitBeginBest=1;
 
+% % 
+% % fitTestBegin=1;
+% % fitTestSpan=38;
 
-fitTestBegin=6;
-fitTestSpan=21;
+fitTestBegin=7;
+fitTestSpan=31;
+
 
 %fitTestSpan=31;
 
@@ -32,8 +36,8 @@ iterations=100;
 
 %method = ["lsqnonlin"];
 %method = ["gna","lsqnonlin"];
-method = ["gna","fmincon","lsqnonlin"];
-%method = ["lsqnonlin"];
+%method = ["gna","fmincon","lsqnonlin"];
+method = ["gna","lsqnonlin"];
 
 disp(['Day',' ','MSE','   ','FPE', '   AIC','    AICc','    nAIC'])
 for i=1:1:length(method)
@@ -86,7 +90,7 @@ if SEIQRDPm.Parameters(1).Value>eps
     
     %   9.0054e-04 alpha was pretty bad.
     
-%No end in sight
+
 if (X(end,4)<1E2) % This criterion should be improved
 % If the error is smaller than the previous best
  if SEIQRDPm.Report.Fit.FPE < fitPrev
@@ -95,6 +99,9 @@ if (X(end,4)<1E2) % This criterion should be improved
     methodBest=i;
  end
 end
+
+
+
 
 end %Check if not 0
 
@@ -119,6 +126,7 @@ opt = simOptions('InitialCondition',InitialStates);
 [Y A X]=sim(SEIQRDPm,udata,opt);
 hold on
 t=fitBegin:length(X)+fitBegin-1;
+%X=round(X)
 semilogy(t,X(:,4),'-','Color',blue,'LineWidth',1);
 hold on;
 semilogy(t,X(:,5),'-','Color',orange,'LineWidth',1);
@@ -177,7 +185,7 @@ disp(['Vrchol overených infekcií:    ',datestr(d1+fitBegin+indMax)])
 disp(['Infikovaní:                 ',num2str(round(max(X(:,5)))+round(max(X(:,6)))),' (pre celu vlnu ochoreni)'])
 disp(['Vyliecení:                  ',num2str(round(max(X(:,5)))),' (pre celu vlnu ochoreni)'])
 disp(['Úmrtia:                       ',num2str(round(max(X(:,6)))),' (pre celu vlnu ochoreni)'])
-disp(['Koniec infekcií:            ',datestr(d1+fitBegin+min(find(X(max(Day):end,4)<1))),' (0 aktívnych prípadov)'])
+disp(['Koniec infekcií:            ',datestr(d1+fitBegin+min(find(X(:,4)<10))),' (<10 aktívnych prípadov)'])
 
 
 disp(['Miera ochrany alpha:           ',num2str(round(SEIQRDPm.Parameters(1).Value*1000)/1000),' '])
@@ -224,7 +232,7 @@ title('COVID-19 na Slovensku, SEIQRDP model (gamma(t))')
 xticks(DayLT)
 xticklabels(DateLT)
 xtickangle(90)
-pandemicEnd=text(fitBegin+min(find(X(max(Day):end,4)<1)),50,datestr(d1+fitBegin+min(find(X(max(Day):end,4)<1))));
+pandemicEnd=text(fitBegin+min(find(X(:,4)<10)),50,datestr(d1+fitBegin+min(find(X(:,4)<10))));
 set(pandemicEnd,'Rotation',90)
 set(pandemicEnd,'FontSize',8)
 
@@ -236,7 +244,7 @@ set(pandemicPeak,'FontSize',8)
 leg = {'Infekcni (model)','Vylieceni (model)','Mrtvi (model)','Infekcni (data)','Vylieceni (data)','Mrtvi (data)'};
 legend(leg{:},'location','northeastoutside')
 
-axis([0,fitBegin+min(find(X(max(Day):end,4)<1))+10,0,max(X(:,5))*1.1])
+axis([0,fitBegin+min(find(X(:,4)<1))+10,0,max(X(:,5))*1.1])
 
 %axis([0,fitBegin+min(find(X(max(Day):end,4)<10))+20,0,max(X(:,5))*1.1])
 %axis([0,270,0,max(X(:,5))*1.1])

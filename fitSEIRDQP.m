@@ -37,11 +37,11 @@ beta   = 1.5;        % [Days]
 sigma  = 3;      % [Days] Latent period
 delta  = 4;       % [Days] Quaratine period
 gamma0 = 1/0.8;
-mu     = 0.002;
+mu     = 0.001;
 
 
 if mod == 1
-    gamma1=0.001; % was 
+    gamma1=1E-3; % was 
 else 
     gamma1=0.0;
 end
@@ -77,7 +77,7 @@ SEIQRDPinit = idnlgrey(FileName,Order,Parameters,InitialStates,Ts,'TimeUnit','da
 
 % alpha - protection rate
 SEIQRDPinit.Parameters(1).Minimum = 0.001;      
-SEIQRDPinit.Parameters(1).Maximum = 0.1;   
+SEIQRDPinit.Parameters(1).Maximum = 0.2;   
 SEIQRDPinit.Parameters(1).Fixed = false;
 
 % beta - infection rate
@@ -87,7 +87,7 @@ SEIQRDPinit.Parameters(2).Fixed = false;
     
 % sigma - latent period
 SEIQRDPinit.Parameters(3).Minimum = 1/7;   % [1/days] 
-SEIQRDPinit.Parameters(3).Maximum = 1/1;    % [1/days] 
+SEIQRDPinit.Parameters(3).Maximum = 1/0.1;    % [1/days] 
 SEIQRDPinit.Parameters(3).Fixed = false; 
 
 % delta - quarantining period 1/days
@@ -97,12 +97,13 @@ SEIQRDPinit.Parameters(4).Fixed = false;
 
 % gamma0 - recovery rate
 SEIQRDPinit.Parameters(5).Minimum = eps;   % [1/days] 
-SEIQRDPinit.Parameters(5).Maximum = 2;    % [1/days] 
+SEIQRDPinit.Parameters(5).Maximum = 5;    % [1/days] 
 SEIQRDPinit.Parameters(5).Fixed = false; 
 
 % gamma1 - recovery rate
 if mod ==1
-SEIQRDPinit.Parameters(6).Minimum = eps;   % [1/days] 
+SEIQRDPinit.Parameters(6).Minimum =0;   % [1/days] 
+%SEIQRDPinit.Parameters(6).Minimum = eps;   % [1/days] 
 %SEIQRDPinit.Parameters(6).Maximum = 1/1;    % [1/days] 
 SEIQRDPinit.Parameters(6).Fixed = false; 
 else
@@ -121,28 +122,28 @@ SEIQRDPinit.Parameters(7).Fixed = false;
 
 
 SEIQRDPinit.InitialStates(1).Fixed   = false; % S(0)
-
+ 
 SEIQRDPinit.InitialStates(2).Fixed   = false; % E(0) 
 
 SEIQRDPinit.InitialStates(3).Fixed   = false; % I(0) 
-
+ 
 SEIQRDPinit.InitialStates(4).Fixed   = true;  % Q(0)
-SEIQRDPinit.InitialStates(4).Minimum = I0; 
-SEIQRDPinit.InitialStates(4).Maximum = 1.2*I0; 
-
+% SEIQRDPinit.InitialStates(4).Minimum = I0; 
+% SEIQRDPinit.InitialStates(4).Maximum = 1.2*I0; 
+% 
 SEIQRDPinit.InitialStates(5).Fixed   = true;  
-SEIQRDPinit.InitialStates(5).Minimum = R0; 
-SEIQRDPinit.InitialStates(5).Maximum = 1.2*Q0; 
-
+% SEIQRDPinit.InitialStates(5).Minimum = R0; 
+% SEIQRDPinit.InitialStates(5).Maximum = 1.2*Q0; 
+% 
 SEIQRDPinit.InitialStates(6).Fixed   = true;  
-SEIQRDPinit.InitialStates(6).Minimum = D0; 
-SEIQRDPinit.InitialStates(6).Maximum = 1.2*D0; 
-
+% SEIQRDPinit.InitialStates(6).Minimum = D0; 
+% SEIQRDPinit.InitialStates(6).Maximum = 1.2*D0; 
+% 
 SEIQRDPinit.InitialStates(7).Fixed   = false;  
 
 %--- Simulation options
 
-SEIQRDPinit.SimulationOptions.FixedStep=1/24;
+%SEIQRDPinit.SimulationOptions.FixedStep=1/24;
 %SEIQRDPinit.SimulationOptions.Solver='ode45';
 
 %optEst.Regularization.Lambda=0; 
@@ -191,22 +192,12 @@ if strcmp(method,'lsqnonlin')
  %optEst.GradientOptions.MinDifference=1E-8;
 end
 
-%optEst.OutputWeight=diag([1000,10,100]);
-%optEst.OutputWeight=diag([500,25,50]);
-%50,10,5
+
+ %optEst.OutputWeight=diag([120,25,20]);
  optEst.OutputWeight=diag([120,25,20]);
-% optEst.OutputWeight=diag([100,25,10]);
-%optEst.Regularization.Lambda = 1.1;
+ %optEst.Regularization.Lambda = 1.00001;
+ optEst.Regularization.Nominal = 'model';
 
-
-% Does not converge 'fmincon', 
-% Does converge 
-% -'gna' most robustly w/ good results, without a lot of fine tuning, but
-% some results widely fly off to "unstable"-ish results. FPE seems to be
-% more reliable of determining the best.
-% - 'lsqnonlin' stalls out of the box, but with MinDifference set to 1E-4
-% itproduces actually more stable results than gna
-% -'lm' with low iteration number
 
 SEIQRDPm = nlgreyest(data,SEIQRDPinit,optEst);              % Run identification procedure
 InitialStates=[SEIQRDPm.InitialStates(1).Value;SEIQRDPm.InitialStates(2).Value;SEIQRDPm.InitialStates(3).Value;SEIQRDPm.InitialStates(4).Value;SEIQRDPm.InitialStates(5).Value;SEIQRDPm.InitialStates(6).Value;;SEIQRDPm.InitialStates(7).Value];
