@@ -1,7 +1,9 @@
 function [SEIQRDPm,InitialStates] = fitSEIRDQP2(fitBegin,iter,mod,method);
 
 % Data reading and preparation
+cd ..
 importData;                              % Script to import the data from CSV
+cd experimental 
 
 I=cumsum(Confirmed);      % Cumulative sum of daily cases, transpose to make it compatible w/ E. Cheynet's code
 R=cumsum(Recovered);      % Cumulative sum of daily cases, transpose to make it compatible w/ E. Cheynet's code

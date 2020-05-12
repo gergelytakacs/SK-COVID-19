@@ -22,14 +22,15 @@ fitPrev=inf;
 fitBeginBest=1;
 
 
-fitTestBegin=5;
-fitTestSpan=14;
+fitTestBegin=14;
+fitTestSpan=31;
 
 %fitTestSpan=31;
 
 mod=1;
 iterations=100;
 method = ["gna","lsqnonlin"];
+method = ["lsqnonlin"]
 %method = ["fmincon"];
 figure(101)
 
@@ -123,8 +124,9 @@ semilogy(t,X(:,6),'k-','LineWidth',1);
 
 %pause
 %% Short term, based on fit and current data
-
+cd ..
 importData;                              % Script to import the data from CSV
+cd experimental
 
 I=cumsum(Confirmed);      % Cumulative sum of daily cases, transpose to make it compatible w/ E. Cheynet's code
 R=cumsum(Recovered);      % Cumulative sum of daily cases, transpose to make it compatible w/ E. Cheynet's code
@@ -198,7 +200,9 @@ first=0;
 %% Finish plot
 
 % Data reading and preparation
+cd ..
 importData;                              % Script to import the data from CSV
+cd experimental 
 
 I=cumsum(Confirmed);      % Cumulative sum of daily cases, transpose to make it compatible w/ E. Cheynet's code
 R=cumsum(Recovered);      % Cumulative sum of daily cases, transpose to make it compatible w/ E. Cheynet's code
