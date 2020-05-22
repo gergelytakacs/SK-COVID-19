@@ -25,7 +25,7 @@ fitBeginBest=1;
 % % fitTestBegin=1;
 % % fitTestSpan=38;
 
-fitTestBegin=1;
+fitTestBegin=31;
 fitTestSpan=31;
 
 
@@ -38,6 +38,7 @@ iterations=100;
 %method = ["gna","lsqnonlin"];
 %method = ["gna","fmincon","lsqnonlin"];
 method = ["gna","lsqnonlin"];
+%method = ["lsqnonlin"];
 method = ["lsqnonlin"];
 
 disp(['Day',' ','MSE','   ','FPE', '   AIC','    AICc','    nAIC'])
@@ -51,7 +52,7 @@ disp(['Fit method: ',method(i)])
 for fitBegin=fitTestBegin:1:fitTestSpan;     % Day to begin the fit
 
 
-[SEIQRDPm,InitialStates] = fitSEIRDQP(fitBegin,iterations,mod,method(i));
+[SEIQRDPm,InitialStates] = fitSEIRDQP_AltGamma(fitBegin,iterations,mod,method(i));
 disp([num2str(fitBegin),'   ',num2str(round(SEIQRDPm.Report.Fit.MSE)),'   ',num2str(round(SEIQRDPm.Report.Fit.FPE)),'   ',num2str(round(SEIQRDPm.Report.Fit.AIC)),'   ',num2str(round(SEIQRDPm.Report.Fit.AICc))])
 
 udata = iddata([],zeros(280,0),1);
@@ -117,7 +118,7 @@ runLength=300;
 
 fitBegin=fitBeginBest;
 
-[SEIQRDPm,InitialStates] = fitSEIRDQP(fitBeginBest,iterations,mod,method(methodBest));
+[SEIQRDPm,InitialStates] = fitSEIRDQP_AltGamma(fitBeginBest,iterations,mod,method(methodBest));
 udata = iddata([],zeros(runLength,0),1);
 opt = simOptions('InitialCondition',InitialStates);
 %opt.AbsTol=1E-6;
@@ -189,14 +190,14 @@ disp(['Úmrtia:                       ',num2str(round(max(X(:,6)))),' (pre celu v
 disp(['Koniec infekcií:            ',datestr(d1+fitBegin+min(find(X(:,4)<10))),' (<10 aktívnych prípadov)'])
 
 
-disp(['Zakladna miera ochrany alpha0:           ',num2str(round(SEIQRDPm.Parameters(1).Value*1000)/1000),' '])
+disp(['Miera ochrany alpha:           ',num2str(round(SEIQRDPm.Parameters(1).Value*1000)/1000),' '])
+
 disp(['Infekcna doba 1/beta:         ',num2str(round(1/SEIQRDPm.Parameters(2).Value*100)/100),' [dni]'])
 disp(['Inkubacna doba 1/sigma:       ',num2str(round(1/SEIQRDPm.Parameters(3).Value*100)/100),' [dni]'])
 disp(['Izolacna doba 1/delta:     ',num2str(round(1/SEIQRDPm.Parameters(4).Value*100)/100),' [dni]'])
-disp(['Dynamika vyliecenia gamma0:     ',num2str(round(SEIQRDPm.Parameters(5).Value*100)/100),' [-]'])
-disp(['Dynamika vyliecenia gamma1:     ',num2str(round(SEIQRDPm.Parameters(6).Value*1000)/1000),' [-]'])
-%disp(['Doba vyliecenia                ',num2str(round(SEIQRDPm.Parameters(7).Value*100000)/100000),'[dni]'])
-disp(['Miera umrtnosti                ',num2str(round(SEIQRDPm.Parameters(7).Value*100000)/100000),'[-]'])
+disp(['Doba vyliecenia 1/gamma0:     ',num2str(round(1/SEIQRDPm.Parameters(5).Value*100)/100),' [dni]'])
+disp(['Miera umrtnosti                ',num2str(round(SEIQRDPm.Parameters(7).Value*100000)/100000),''])
+
 
 %disp(['Miera odstránenia prípadov gamma: ',num2str(gammaEst),', krátkodobý fit'])
 disp(['Zhoda modelu (infekcie):      ',num2str(round(SEIQRDPm.Report.Fit.FitPercent(1)*10)/10),'%'])

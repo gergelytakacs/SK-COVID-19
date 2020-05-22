@@ -3,6 +3,8 @@ hold off;                   % Useful for tuning
 tic
 % Use the wrong fits to comute a statistical uncertainity
 
+importMobility;
+
 warning('off','Ident:general:modelDataTU'); % Stop 'sim' whining about time units, they are just fine
 %'MATLAB:nearlySingularMatrix'
 
@@ -25,9 +27,9 @@ fitBeginBest=1;
 % % fitTestBegin=1;
 % % fitTestSpan=38;
 
-fitTestBegin=1;
+fitTestBegin=7;
 fitTestSpan=31;
-
+%7-31 ok
 
 %fitTestSpan=31;
 
@@ -37,7 +39,7 @@ iterations=100;
 %method = ["lsqnonlin"];
 %method = ["gna","lsqnonlin"];
 %method = ["gna","fmincon","lsqnonlin"];
-method = ["gna","lsqnonlin"];
+%method = ["gna","lsqnonlin"];
 method = ["lsqnonlin"];
 
 disp(['Day',' ','MSE','   ','FPE', '   AIC','    AICc','    nAIC'])
@@ -51,7 +53,7 @@ disp(['Fit method: ',method(i)])
 for fitBegin=fitTestBegin:1:fitTestSpan;     % Day to begin the fit
 
 
-[SEIQRDPm,InitialStates] = fitSEIRDQP(fitBegin,iterations,mod,method(i));
+[SEIQRDPm,InitialStates] = fitSEIRDQP_Mobility(fitBegin,iterations,mod,method(i));
 disp([num2str(fitBegin),'   ',num2str(round(SEIQRDPm.Report.Fit.MSE)),'   ',num2str(round(SEIQRDPm.Report.Fit.FPE)),'   ',num2str(round(SEIQRDPm.Report.Fit.AIC)),'   ',num2str(round(SEIQRDPm.Report.Fit.AICc))])
 
 udata = iddata([],zeros(280,0),1);
@@ -78,7 +80,7 @@ set(get(get(h2,'Annotation'),'LegendInformation'),'IconDisplayStyle','off');
 set(get(get(h3,'Annotation'),'LegendInformation'),'IconDisplayStyle','off');
 
 set(gca,'yscale','lin')
-axis([0,150,0,1.5E3])
+axis([0,100,0,1.5E3])
 % If prediction does not fly off the charts
 % Probably these are some local minimums, should check and compar 
 % Parameters
@@ -117,7 +119,7 @@ runLength=300;
 
 fitBegin=fitBeginBest;
 
-[SEIQRDPm,InitialStates] = fitSEIRDQP(fitBeginBest,iterations,mod,method(methodBest));
+[SEIQRDPm,InitialStates] = fitSEIRDQP_Mobility(fitBeginBest,iterations,mod,method(methodBest));
 udata = iddata([],zeros(runLength,0),1);
 opt = simOptions('InitialCondition',InitialStates);
 %opt.AbsTol=1E-6;
@@ -188,21 +190,28 @@ disp(['Vyliecení:                  ',num2str(round(max(X(:,5)))),' (pre celu vln
 disp(['Úmrtia:                       ',num2str(round(max(X(:,6)))),' (pre celu vlnu ochoreni)'])
 disp(['Koniec infekcií:            ',datestr(d1+fitBegin+min(find(X(:,4)<10))),' (<10 aktívnych prípadov)'])
 
-
-disp(['Zakladna miera ochrany alpha0:           ',num2str(round(SEIQRDPm.Parameters(1).Value*1000)/1000),' '])
+disp(' ')
+disp(['Miera ochrany alpha:           ',num2str(round(SEIQRDPm.Parameters(1).Value*1000)/1000),'[-]'])
 disp(['Infekcna doba 1/beta:         ',num2str(round(1/SEIQRDPm.Parameters(2).Value*100)/100),' [dni]'])
 disp(['Inkubacna doba 1/sigma:       ',num2str(round(1/SEIQRDPm.Parameters(3).Value*100)/100),' [dni]'])
 disp(['Izolacna doba 1/delta:     ',num2str(round(1/SEIQRDPm.Parameters(4).Value*100)/100),' [dni]'])
-disp(['Dynamika vyliecenia gamma0:     ',num2str(round(SEIQRDPm.Parameters(5).Value*100)/100),' [-]'])
-disp(['Dynamika vyliecenia gamma1:     ',num2str(round(SEIQRDPm.Parameters(6).Value*1000)/1000),' [-]'])
-%disp(['Doba vyliecenia                ',num2str(round(SEIQRDPm.Parameters(7).Value*100000)/100000),'[dni]'])
-disp(['Miera umrtnosti                ',num2str(round(SEIQRDPm.Parameters(7).Value*100000)/100000),'[-]'])
+disp(['Faktor vyzdravenia gamma0:     ',num2str(round(SEIQRDPm.Parameters(5).Value*100)/100),' [dni]'])
+disp(['Faktor vyzdravenia gamma1:     ',num2str(round(SEIQRDPm.Parameters(6).Value*100)/100),' [-]'])
+disp(['Faktor vyzdravenia gammaTau:     ',num2str(round(SEIQRDPm.Parameters(7).Value*100)/100),' [dni]'])
+disp(['Miera umrtnosti                ',num2str(round(SEIQRDPm.Parameters(8).Value*10000)/10000),'[-]'])
+
 
 %disp(['Miera odstránenia prípadov gamma: ',num2str(gammaEst),', krátkodobý fit'])
+disp(' ')
 disp(['Zhoda modelu (infekcie):      ',num2str(round(SEIQRDPm.Report.Fit.FitPercent(1)*10)/10),'%'])
 disp(['Zhoda modelu (vylieceni):     ',num2str(round(SEIQRDPm.Report.Fit.FitPercent(2)*10)/10),'%'])
 disp(['Zhoda modelu (umrtia):        ',num2str(round(SEIQRDPm.Report.Fit.FitPercent(3)*10)/10),'%'])
+disp(['Zhoda modelu FPE:        ',num2str(round(SEIQRDPm.Report.Fit.FPE)),'[-]'])
+disp(['Zhoda modelu MSE:        ',num2str(round(SEIQRDPm.Report.Fit.MSE)),'[-]'])
+disp(['Metoda vypoctu:        ',method(methodBest)])
+
 disp(' ')
+
 disp(['Najlepší fit od ',num2str(fitBeginBest),' dna nakazy v rozmedzi ',num2str(fitTestBegin),'-',num2str(fitTestSpan),' dna az dodnes, kde alpha>0.'])
 first=0;
 
@@ -264,8 +273,7 @@ axis([0,fitBegin+min(find(X(max(Day):end,4)<10))+20,0,max(X(:,5))*1.1])
 
 set(gca,'yscale','log')
 
-axis([0,fitBegin+min(find(X(max(Day):end,4)<10))+20,1,1E4])
-%axis([0,270,0,max(X(:,5))*1.1])
+axis([0,fitBegin+min(find(X(max(Day):end,4)<10))+20,1,max(X(:,5))*1.1])
 cd out
 print(['skCOVID19_SEIQRD_GammaT_LongTerm_Log'],'-dpng','-r0')
 cd ..
@@ -275,3 +283,5 @@ set(gca,'yscale','lin')
 axis([0,max(Day)*1.1,0,max(I)*1.1])
 
 disp(['Výpocet trval ',num2str(round(toc/60*10)/10),' minut'])
+
+beep
